@@ -1,0 +1,90 @@
+<config>
+
+  <Systems>
+
+    <!-- MAPS -->
+
+    <System name="logistic">
+      <ModellingTime>10000</ModellingTime>
+      <Parameters>
+        <Step start="0.5" step="0.5" end="2" default="1"/>
+        <Param name="r" start="1" step="0.001" end="4" default="4"/>
+      </Parameters>
+    </System>
+
+    <System name="henon">
+      <ModellingTime>100000</ModellingTime>
+      <Parameters>
+        <Step start="0.5" step="1" end="1.5" default="1"/>
+        <Param name="a" start="-0.122" step="0.001" end="1.426" default="1.4"/>
+        <Param name="b" start="-0.39" step="0.001" end="0.314" default="0.3"/>
+      </Parameters>
+    </System>
+
+    <System name="tinkerbell">
+      <ModellingTime>100000</ModellingTime>
+      <Parameters>
+        <Step start="0.5" step="0.5" end="2" default="1"/>
+        <Param name="a" start="-1.8" step="0.001" end="0.905" default="0.9"/>
+        <Param name="b" start="-0.6" step="0.001" end="0.27" default="-0.6"/>
+        <Param name="c" start="-0.201" step="0.001" end="2.009" default="2.0"/>
+        <Param name="d" start="-1.631" step="0.001" end="0.503" default="0.5"/>
+      </Parameters>
+    </System>
+
+    <System name="henon_generalized">
+      <ModellingTime>100000</ModellingTime>
+      <Parameters>
+        <Step start="0.5" step="1" end="1.5" default="1"/>
+        <Param name="a" start="-0.264" step="0.001" end="1.931" default="1.9"/>
+        <Param name="b" start="-0.027" step="0.0001" end="0.0434" default="0.03"/>
+      </Parameters>
+    </System>
+    
+    
+    <!-- FLOWS -->
+    
+    <System name="lorenz">
+      <ModellingTime>1000</ModellingTime>
+      <Parameters>
+        <Step start="0.005" step="0.005" end="0.02" default="0.01"/>
+        <Param name="ϛ" start="4" step="0.1" end="56.1" default="10.0"/>
+        <Param name="r" start="14" step="0.5" end="250" default="28.0"/>
+        <Param name="b" start="0" step="0.01" end="5" default="2.666666666666666667"/>
+      </Parameters>
+    </System>
+
+    <System name="rossler">
+      <ModellingTime>10000</ModellingTime>
+      <Parameters>
+        <Step start="0.001" step="0.001" end="1" default="0.1"/>
+        <Param name="a" start="0" step="0.001" end="0.41" default="0.2"/>
+        <Param name="b" start="0.01" step="0.01" end="10" default="0.2"/>
+        <Param name="c" start="0.39" step="0.01" end="14.17" default="5.7"/>
+      </Parameters>
+    </System>
+
+    <System name="ikeda">
+      <ModellingTime>100000</ModellingTime>
+      <StepSize>1</StepSize>
+    </System>
+
+  </Systems>
+
+
+  <ModelingTask>
+
+    <TargetSystem>logistic</TargetSystem>
+
+    <Action name="signal"></Action>
+    <!-- bifurcation , signal , benettin_les , benettin_lle , benettin_lle_param , le_map , stefanski -->
+    <!--Action name="stefanski">5000|0.0001</Action-->
+
+    <Orthogonalization type="mgs" interval="1"/>
+    <!-- cgs , mgs , hh -->
+
+    <Output outDir="Output" picHeight="400" picWidth="640"></Output>
+
+  </ModelingTask>
+
+</config>
