@@ -1,4 +1,5 @@
-﻿using MathLib.DrawEngine;
+﻿using MathLib.Data;
+using MathLib.DrawEngine;
 using MathLib.DrawEngine.Charts;
 using MathLib.IO;
 using MathLib.MathMethods.Solvers;
@@ -47,7 +48,7 @@ namespace ModelledSystems.Routines
 
             threadedRun.WaitForAllTasks();
 
-            SyncMapSeries.ListDataPoints.AddRange(ds);
+            SyncMapSeries.DataPoints.AddRange(ds);
 
             DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_dataBifur_" + Param.Name), SyncMapSeries.ToString());
 

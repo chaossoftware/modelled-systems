@@ -1,4 +1,5 @@
-﻿using MathLib.DrawEngine;
+﻿using MathLib.Data;
+using MathLib.DrawEngine;
 using MathLib.DrawEngine.Charts;
 using MathLib.Threading;
 using System;
@@ -44,9 +45,9 @@ namespace ModelledSystems.Routines
                     Console.Write("#");
             }
 
-            SyncMapSeries.ListDataPoints.AddRange(ds);
+            SyncMapSeries.DataPoints.AddRange(ds);
 
-            SyncMapSeries.ListDataPoints.Sort(delegate (DataPoint c1, DataPoint c2) { try { return c1.X.CompareTo(c2.X); } catch { } return 0; });
+            SyncMapSeries.DataPoints.Sort(delegate (DataPoint c1, DataPoint c2) { try { return c1.X.CompareTo(c2.X); } catch { } return 0; });
 
             //DataWriter.CreateDataFile("fileName", SyncMapSeries.ToString());
 
@@ -57,15 +58,15 @@ namespace ModelledSystems.Routines
             po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_stefanski.png"), ImageFormat.Png);
 
             int k = SyncMapSeries.Length - 1;
-            double rezY = SyncMapSeries.ListDataPoints[k].Y;
+            double rezY = SyncMapSeries.DataPoints[k].Y;
             bool sync = true;
 
             while (sync)
             {
-                sync = Math.Abs(SyncMapSeries.ListDataPoints[--k].Y - rezY) < 1e-8;
+                sync = Math.Abs(SyncMapSeries.DataPoints[--k].Y - rezY) < 1e-8;
             }
 
-            Console.WriteLine(SyncMapSeries.ListDataPoints[k++].X.ToString("F5"));
+            Console.WriteLine(SyncMapSeries.DataPoints[k++].X.ToString("F5"));
         }
 
 
