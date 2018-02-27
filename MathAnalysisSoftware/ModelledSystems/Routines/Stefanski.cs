@@ -13,7 +13,7 @@ namespace ModelledSystems.Routines
     class Stefanski : Routine
     {
 
-        static DataSeries SyncMapSeries;
+        static Timeseries SyncMapSeries;
         int step, currentIteration;
         int Piter;
         double Pstep;
@@ -23,7 +23,7 @@ namespace ModelledSystems.Routines
 
         public Stefanski(string outDir, SystemParameters systemParameters, int pIter, double pstep) : base (outDir, systemParameters)
         {
-            SyncMapSeries = new DataSeries();
+            SyncMapSeries = new Timeseries();
             currentIteration = 1;
             Piter = pIter;
             Pstep = pstep;

@@ -14,7 +14,7 @@ namespace ModelledSystems.Routines
     class Bifurcation : Routine
     {
 
-        static DataSeries SyncMapSeries;
+        static Timeseries SyncMapSeries;
         int step, currentIteration;
         int ParamIndex;
         static int TotIter;
@@ -24,7 +24,7 @@ namespace ModelledSystems.Routines
 
         public Bifurcation(string outDir, SystemParameters systemParameters, int paramIndex) : base(outDir, systemParameters)
         {
-            SyncMapSeries = new DataSeries();
+            SyncMapSeries = new Timeseries();
             currentIteration = 1;
             ParamIndex = paramIndex;
             Param = SysParameters.ListParameters[ParamIndex];
