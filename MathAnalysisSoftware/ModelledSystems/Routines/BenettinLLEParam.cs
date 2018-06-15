@@ -73,7 +73,7 @@ namespace ModelledSystems.Routines
             SystemEquations eq = GetSystemEquations(false, vars, EqStep);
             SystemEquations eq1 = GetSystemEquations(false, vars, EqStep);
 
-            int EqN = eq.N;
+            int EqN = eq.EquationsCount;
 
             long _totIter = (long)(SysParameters.ModellingTime / EqStep);
             eq.Solver.Init();
@@ -88,7 +88,7 @@ namespace ModelledSystems.Routines
                 if (eq1.Solver.Solution[0, 0] == 0)
                 {
                     eq1.Solver.Solution[0, 0] += eq.Solver.Solution[0, 0] + 1e-8;
-                    for (int _i = 1; _i < eq.N; _i++)
+                    for (int _i = 1; _i < eq.EquationsCount; _i++)
                         eq1.Solver.Solution[0, _i] = eq.Solver.Solution[0, _i];
                     lsum = 0;
                     nl = 0;
@@ -98,7 +98,7 @@ namespace ModelledSystems.Routines
                 eq1.Solver.NexStep();
 
                 double dl2 = 0;
-                for (int _i = 0; _i < eq.N; _i++)
+                for (int _i = 0; _i < eq.EquationsCount; _i++)
                     dl2 += Math.Pow(eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i], 2);
 
                 if (dl2 > 0)
@@ -106,7 +106,7 @@ namespace ModelledSystems.Routines
                     double df = 1e16 * dl2;
                     double rs = 1 / Math.Sqrt(df);
 
-                    for (int _i = 0; _i < eq.N; _i++)
+                    for (int _i = 0; _i < eq.EquationsCount; _i++)
                         eq1.Solver.Solution[0, _i] = eq.Solver.Solution[0, _i] + rs * (eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i]);
                     lsum += Math.Log(df);
                     nl++;

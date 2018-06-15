@@ -9,7 +9,8 @@ namespace ModelledSystems
     /// 3 linear and 9 non-linear equations
     /// Describes fluid flow
     /// </summary>
-    public class Lorenz : SystemEquations {
+    public class Lorenz : SystemEquations
+    {
 
         private double sg = 10.0;
         private double r = 28.0;
@@ -29,25 +30,25 @@ namespace ModelledSystems
         }
 
         private void init(double step) {
-            this.SystemName = "Lorenz";
-            N = 3;
-            if (Linearized)
-                NN += N;
+            EquationsCount = 3;
+            if (linearized)
+                TotalEquationsCount += EquationsCount;
             Solver = new RK4(this, step);
         }
 
+        public override string Name => "Lorenz";
 
-        public override double[,] Derivs(double[,] x, double[,] dxdt) {
+        public override double[,] Derivatives(double[,] x, double[,] dxdt) {
 
             //Nonlinear Lorenz equations:
             dxdt[0, 0] = sg * (x[0, 1] - x[0, 0]);
             dxdt[0, 1] = -x[0, 0] * x[0, 2] + r * x[0, 0] - x[0, 1];
             dxdt[0, 2] = x[0, 0] * x[0, 1] - b * x[0, 2];
 
-            if (Linearized)
+            if (linearized)
             {
                 //Linearized Lorenz equations:
-                for (int i = 0; i < N; i++)
+                for (int i = 0; i < EquationsCount; i++)
                 {
                     dxdt[1, i] = sg * (x[2, i] - x[1, i]);
                     dxdt[2, i] = (r - x[0, 2]) * x[1, i] - x[2, i] - x[0, 0] * x[3, i];
@@ -61,30 +62,30 @@ namespace ModelledSystems
 
         public override void Init(double[,] x) {
             //set diagonal and first n elements to 1
-            for (int i = 0; i < N; i++) {
+            for (int i = 0; i < EquationsCount; i++) {
                 x[0, i] = 1.0;
 
-                if (Linearized)
+                if (linearized)
                     x[i + 1, i] = 1.0;
             }
         }
 
 
         public override string GetInfoShort() {
-            return SystemName;
+            return Name;
         }
 
 
         public override string GetInfoFull() {
             return string.Format("{0}: sigma = {1:F3}; rho = {2:F3}; b = {3:F3}; step size = {4:F3}"
-                , SystemName, sg, r, b, Solver.Step);
+                , Name, sg, r, b, Solver.Step);
         }
 
 
         public override string ToFileName()
         {
             return string.Format("{0}_sigma={1:F1}_rho={2:F1}_b={3:F1}_st={4:F3}"
-                , SystemName, sg, r, b, Solver.Step);
+                , Name, sg, r, b, Solver.Step);
         }
     }
 }

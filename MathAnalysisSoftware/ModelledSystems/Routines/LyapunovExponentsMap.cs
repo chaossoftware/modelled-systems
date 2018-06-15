@@ -111,21 +111,21 @@ namespace ModelledSystems.Routines
 
             SystemEquations equations = GetSystemEquations(true, vars, EqStep);
             _totIter = (long)(SysParameters.ModellingTime / equations.Solver.Step);
-            Orthogonalization ort = new MGS(equations.N);
-            BenettinMethod lyap = new BenettinMethod(equations.N);
+            Orthogonalization ort = new ModifiedGrammSchmidt(equations.EquationsCount);
+            BenettinMethod lyap = new BenettinMethod(equations.EquationsCount);
 
-            R = new double[equations.N];
+            R = new double[equations.EquationsCount];
             equations.Solver.Init();
 
             for (int i = 0; i < _totIter; i++)
             {
                 equations.Solver.NexStep();
-                ort.makeOrthogonalization(equations.Solver.Solution, R);
+                ort.Perform(equations.Solver.Solution, R);
                 lyap.calculateLE(R, equations.Solver.Time);
                 _totIter--;
             }
 
-            for (int k = 0; k < equations.N; k++)
+            for (int k = 0; k < equations.EquationsCount; k++)
                 if (lyap.lespec[k] > 0)
                     rez++;
 

@@ -33,7 +33,7 @@ namespace ModelledSystems.Routines
             EqStep = SysParameters.Step.Default;
 
             Equations = GetSystemEquations(true, SysParameters.Defaults, EqStep);
-            EqN = Equations.N;
+            EqN = Equations.EquationsCount;
 
             ort = GetOrthogonalization(Orthogonalization);
             TotIter = (long)(SysParameters.ModellingTime / EqStep);
@@ -51,7 +51,7 @@ namespace ModelledSystems.Routines
                     Equations.Solver.NexStep();
 
                 //------------------- Call Orthonormalization -------------
-                ort.makeOrthogonalization(Equations.Solver.Solution, R);
+                ort.Perform(Equations.Solver.Solution, R);
 
                 lyap.calculateLE(R, Equations.Solver.Time);
 
@@ -96,13 +96,13 @@ namespace ModelledSystems.Routines
             ortType = ortType.ToLower();
 
             if (ortType == "mgs")
-                return new MGS(EqN);
+                return new ModifiedGrammSchmidt(EqN);
             else if (ortType == "cgs")
-                return new CGS(EqN);
+                return new ClassicGrammSchmidt(EqN);
             else if (ortType == "hh")
-                return new HH(EqN);
+                return new HouseholderTransformation(EqN);
 
-            return new MGS(EqN);
+            return new ModifiedGrammSchmidt(EqN);
         }
     }
 }

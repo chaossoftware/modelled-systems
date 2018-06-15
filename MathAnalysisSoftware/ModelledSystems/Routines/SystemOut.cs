@@ -19,7 +19,7 @@ namespace ModelledSystems.Routines
             EqStep = SysParameters.Step.Default;
 
             Equations = GetSystemEquations(false, SysParameters.Defaults, EqStep);
-            EqN = Equations.N;
+            EqN = Equations.EquationsCount;
             
             TotIter = (long)(SysParameters.ModellingTime / EqStep);
 

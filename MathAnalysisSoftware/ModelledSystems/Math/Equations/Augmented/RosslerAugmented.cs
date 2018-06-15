@@ -27,13 +27,13 @@ namespace ModelledSystems
         }
 
         private void init() {
-            this.SystemName = "Rossler";
-            N = 9;
+            EquationsCount = 9;
             Solver = new RK4(this, 0.01);
         }
 
+        public override string Name => "Rossler Augmented";
 
-        public override double[,] Derivs(double[,] x, double[,] dxdt) {
+        public override double[,] Derivatives(double[,] x, double[,] dxdt) {
 
             double x00 = x[0, 3] + x[0, 6];
             double x01 = x[0, 4] + x[0, 7];
@@ -58,7 +58,7 @@ namespace ModelledSystems
 
         public override void Init(double[,] x) {
             //set diagonal and first n elements to 1
-            for (int i = 0; i < N; i++) {
+            for (int i = 0; i < EquationsCount; i++) {
                 x[0, i] = 1e-8;
             }
         }
@@ -71,6 +71,11 @@ namespace ModelledSystems
 
         public override string GetInfoFull() {
             throw new System.NotImplementedException();
+        }
+
+        public override string ToFileName()
+        {
+            throw new NotImplementedException();
         }
     }
 }

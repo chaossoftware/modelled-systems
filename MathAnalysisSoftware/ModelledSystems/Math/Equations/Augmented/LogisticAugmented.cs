@@ -13,21 +13,20 @@ namespace ModelledSystems
         private double a = 4;
 
         public LogisticAugmented() {
-            this.SystemName = "Logistic Map";
-            N = 3;
+            EquationsCount = 3;
             Solver = new SimpleSolver(this);
         }
 
         public LogisticAugmented(double a)
         {
             this.a = a;
-            this.SystemName = "Logistic Map";
-            N = 3;
+            EquationsCount = 3;
             Solver = new SimpleSolver(this);
         }
 
+        public override string Name => "Logistic Map Augmented";
 
-        public override double[,] Derivs(double[,] x, double[,] dxdt) {
+        public override double[,] Derivatives(double[,] x, double[,] dxdt) {
             double x00 = x[0, 1] + x[0, 2];
 
             //Nonlinear Logistic map equations:
@@ -41,7 +40,7 @@ namespace ModelledSystems
 
         public override void Init(double[,] x) {
             //set diagonal and first n elements to 1
-            for (int i = 0; i < N; i++) {
+            for (int i = 0; i < EquationsCount; i++) {
                 x[0, i] = 1e-8;
             }
         }
@@ -53,6 +52,11 @@ namespace ModelledSystems
 
 
         public override string GetInfoFull() {
+            throw new NotImplementedException();
+        }
+
+        public override string ToFileName()
+        {
             throw new NotImplementedException();
         }
     }

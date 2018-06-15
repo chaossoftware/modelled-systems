@@ -28,13 +28,13 @@ namespace ModelledSystems
         }
 
         private void init() {
-            this.SystemName = "Lorenz";
-            N = 9;
+            EquationsCount = 9;
             Solver = new RK4(this, 0.01);
         }
 
+        public override string Name => "Lorenz Augmented";
 
-        public override double[,] Derivs(double[,] x, double[,] dxdt) {
+        public override double[,] Derivatives(double[,] x, double[,] dxdt) {
 
             double x00 = x[0, 3] + x[0, 6];
             double x01 = x[0, 4] + x[0, 7];
@@ -59,7 +59,7 @@ namespace ModelledSystems
 
         public override void Init(double[,] x) {
             //set diagonal and first n elements to 1
-            for (int i = 0; i < N; i++) {
+            for (int i = 0; i < EquationsCount; i++) {
                 x[0, i] = 1e-8;
 
             }
@@ -67,13 +67,18 @@ namespace ModelledSystems
 
 
         public override string GetInfoShort() {
-            return SystemName;
+            return Name;
         }
 
 
         public override string GetInfoFull() {
             return string.Format("{0}: sigma = {1:F3}; rho = {2:F3}; b = {3:F3}; step size = {4:F3}"
-                , SystemName, sg, r, b, Solver.Step);
+                , Name, sg, r, b, Solver.Step);
+        }
+
+        public override string ToFileName()
+        {
+            throw new NotImplementedException();
         }
     }
 }

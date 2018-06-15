@@ -20,13 +20,13 @@ namespace ModelledSystems
         }
 
         private void init() {
-            SystemName = "Generalized Henon Map";
-            N = 9;
+            EquationsCount = 9;
             Solver = new SimpleSolver(this);
         }
 
+        public override string Name => "Generalized Henon Map Augmented";
 
-        public override double[,] Derivs(double[,] x, double[,] dxdt) {
+        public override double[,] Derivatives(double[,] x, double[,] dxdt) {
             double x00 = x[0, 3] + x[0, 6];
             double x01 = x[0, 4] + x[0, 7];
             double x02 = x[0, 5] + x[0, 8];
@@ -50,7 +50,7 @@ namespace ModelledSystems
 
         public override void Init(double[,] x) {
             //set diagonal and first n elements to 1
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < EquationsCount; i++)
             {
                 x[0, i] = 1e-8;
             }
@@ -58,19 +58,19 @@ namespace ModelledSystems
 
 
         public override string GetInfoShort() {
-            return SystemName;
+            return Name;
         }
 
 
         public override string GetInfoFull() {
             return string.Format("{0}: a = {1:F1}; b = {2:F1}; step size = {3:F1}"
-                , SystemName, a, b, Solver.Step);
+                , Name, a, b, Solver.Step);
         }
 
         public override string ToFileName()
         {
             return string.Format("{0}_a={1:F1}_b={2:F1}_st={3:F3}"
-                , SystemName, a, b, Solver.Step);
+                , Name, a, b, Solver.Step);
         }
     }
 }

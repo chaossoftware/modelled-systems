@@ -84,7 +84,7 @@ namespace ModelledSystems.Routines
                 AugmentedEquations.Solver.NexStep();
                 if (j > TotIter - LastIter)
                 {
-                    double rez = AugmentedEquations.Solver.Solution[0, AugmentedEquations.N - AugmentedEquations.N / 3];
+                    double rez = AugmentedEquations.Solver.Solution[0, AugmentedEquations.EquationsCount - AugmentedEquations.EquationsCount / 3];
                     if (!double.IsInfinity(rez) && !double.IsNaN(rez) && rez < 100 && rez > -100)
                         ds.Add(new DataPoint(p, rez));
                 }

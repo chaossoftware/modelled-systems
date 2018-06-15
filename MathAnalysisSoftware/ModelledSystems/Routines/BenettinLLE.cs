@@ -27,7 +27,7 @@ namespace ModelledSystems.Routines
             eq = GetSystemEquations(false, SysParameters.Defaults, EqStep);
             eq1 = GetSystemEquations(false, SysParameters.Defaults, EqStep);
 
-            EqN = eq.N;
+            EqN = eq.EquationsCount;
 
             TotIter = (long)(SysParameters.ModellingTime / EqStep);
             //outArray = new double[TotIter];
@@ -54,7 +54,7 @@ namespace ModelledSystems.Routines
             if (eq1.Solver.Solution[0, 0] == 0)
             {
                 eq1.Solver.Solution[0, 0] += eq.Solver.Solution[0, 0] + 1e-8;
-                for (int _i = 1; _i < eq.N; _i++)
+                for (int _i = 1; _i < eq.EquationsCount; _i++)
                     eq1.Solver.Solution[0, _i] = eq.Solver.Solution[0, _i];
                 lsum = 0;
                 nl = 0;
@@ -64,7 +64,7 @@ namespace ModelledSystems.Routines
             eq1.Solver.NexStep();
 
             double dl2 = 0;
-            for (int _i = 0; _i < eq.N; _i++)
+            for (int _i = 0; _i < eq.EquationsCount; _i++)
                 dl2 += Math.Pow(eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i], 2);
 
             if (dl2 > 0)
@@ -72,7 +72,7 @@ namespace ModelledSystems.Routines
                 double df = 1e16 * dl2;
                 double rs = 1 / Math.Sqrt(df);
 
-                for (int _i = 0; _i < eq.N; _i++)
+                for (int _i = 0; _i < eq.EquationsCount; _i++)
                     eq1.Solver.Solution[0, _i] = eq.Solver.Solution[0, _i] + rs * (eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i]);
                 lsum += Math.Log(df);
                 nl++;
@@ -84,7 +84,7 @@ namespace ModelledSystems.Routines
 
         private void WriteResults()
         {
-            string fileNameStart = Path.Combine(OutDir, eq.SystemName);
+            string fileNameStart = Path.Combine(OutDir, eq.Name);
 
             Console.WriteLine("{0:F5}", l1);
             //DataWriter.CreateDataFile(equations.SystemName + "_inTime.le", output.ToString());

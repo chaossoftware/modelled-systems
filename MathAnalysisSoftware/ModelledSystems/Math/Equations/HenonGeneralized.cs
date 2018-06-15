@@ -25,16 +25,17 @@ namespace ModelledSystems
             init();
         }
 
-        private void init() {
-            SystemName = "Generalized Henon Map";
-            N = 3;
-            if (Linearized)
-                NN += N;
+        private void init()
+        {
+            EquationsCount = 3;
+            if (linearized)
+                TotalEquationsCount += EquationsCount;
             Solver = new SimpleSolver(this);
         }
 
+        public override string Name => "Generalized Henon Map";
 
-        public override double[,] Derivs(double[,] x, double[,] dxdt) {
+        public override double[,] Derivatives(double[,] x, double[,] dxdt) {
 
             //Nonlinear Henon map equations:
             //dxdt[0, 0] = 1 + x[0, 2] - a * x[0, 1] * x[0, 1];
@@ -45,9 +46,9 @@ namespace ModelledSystems
             dxdt[0, 1] = x[0, 0];
             dxdt[0, 2] = x[0, 1];
 
-            if (Linearized)
+            if (linearized)
             {
-                for (int i = 0; i < N; i++)
+                for (int i = 0; i < EquationsCount; i++)
                 { 
                     dxdt[1, i] = - 2 * x[0, 1] * x[2, i] - b * x[3, i];
                     dxdt[2, i] = x[1, i];
@@ -63,29 +64,29 @@ namespace ModelledSystems
 
         public override void Init(double[,] x) {
             //set diagonal and first n elements to 1
-            for (int i = 0; i < N; i++) {
+            for (int i = 0; i < EquationsCount; i++) {
                 x[0, i] = 0.0;
 
-                if (Linearized)
+                if (linearized)
                     x[i + 1, i] = 1.0;
             }
         }
 
 
         public override string GetInfoShort() {
-            return SystemName;
+            return Name;
         }
 
 
         public override string GetInfoFull() {
             return string.Format("{0}: a = {1:F1}; b = {2:F1}; step size = {3:F1}"
-                , SystemName, a, b, Solver.Step);
+                , Name, a, b, Solver.Step);
         }
 
         public override string ToFileName()
         {
             return string.Format("{0}_a={1:F1}_b={2:F1}_st={3:F3}"
-                , SystemName, a, b, Solver.Step);
+                , Name, a, b, Solver.Step);
         }
     }
 }

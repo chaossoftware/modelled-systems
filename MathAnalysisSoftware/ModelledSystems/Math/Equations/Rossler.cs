@@ -29,25 +29,25 @@ namespace ModelledSystems
         }
 
         private void init(double step) {
-            this.SystemName = "Rossler";
-            N = 3;
-            if (Linearized)
-                NN += N;
+            EquationsCount = 3;
+            if (linearized)
+                TotalEquationsCount += EquationsCount;
             Solver = new RK4(this, step);
         }
 
+        public override string Name => "Rossler";
 
-        public override double[,] Derivs(double[,] x, double[,] dxdt) {
+        public override double[,] Derivatives(double[,] x, double[,] dxdt) {
 
             //Nonlinear Rossler equations:
             dxdt[0, 0] = -x[0, 1] - x[0, 2];
             dxdt[0, 1] = x[0, 0] + a * x[0, 1];
             dxdt[0, 2] = b + x[0, 2] * (x[0, 0] - c);
 
-            if (Linearized)
+            if (linearized)
             {
                 //Linearized Rossler equations:
-                for (int i = 0; i < N; i++)
+                for (int i = 0; i < EquationsCount; i++)
                 {
                     dxdt[1, i] = -x[2, i] - x[3, i];
                     dxdt[2, i] = x[1, i] + a * x[2, i];
@@ -61,30 +61,30 @@ namespace ModelledSystems
 
         public override void Init(double[,] x) {
             //set diagonal and first n elements to 1
-            for (int i = 0; i < N; i++) {
+            for (int i = 0; i < EquationsCount; i++) {
                 x[0, i] = 0.01;
 
-                if (Linearized)
+                if (linearized)
                     x[i + 1, i] = 0.01;
             }
         }
 
 
         public override string GetInfoShort() {
-            return SystemName;
+            return Name;
         }
 
 
         public override string GetInfoFull() {
             return string.Format("{0}: a = {1:F1}; b = {2:F1}; c = {3:F1}; step size = {4:F3}"
-                , SystemName, a, b, c, Solver.Step);
+                , Name, a, b, c, Solver.Step);
         }
 
 
         public override string ToFileName()
         {
             return string.Format("{0}_a={1:F1}_b={2:F1}_c={3:F1}_st={4:F3}"
-                , SystemName, a, b, c, Solver.Step);
+                , Name, a, b, c, Solver.Step);
         }
     }
 }
