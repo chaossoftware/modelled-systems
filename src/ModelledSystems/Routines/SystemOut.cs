@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ModelledSystems.Routines
 {
-    class SystemOut : Routine
+    internal class SystemOut : Routine
     {
         long TotIter;
         int EqN;
@@ -37,9 +37,9 @@ namespace ModelledSystems.Routines
                 for (int k = 0; k < EqN; k++)
                     outArray[i, k] = Equations.Solver.Solution[0, k];
             }
+
             WriteResults();
         }
-
 
         private void WriteResults()
         {
@@ -52,6 +52,7 @@ namespace ModelledSystems.Routines
             double[] zt = new double[TotIter];
 
             double t = 0;
+
             for (int cnt = 0; cnt < TotIter; cnt++)
             {
                 output.AppendFormat("{0:F5}", t);

@@ -1,110 +1,85 @@
 ﻿using System;
+using System.Linq;
 using System.Xml.Linq;
 using System.Globalization;
 using System.Drawing;
 
 namespace ModelledSystems
 {
-    class Parameters
+    internal class Parameters
     {
+        private const string ConfigFile = "systems_config.xml";
 
-        //System
-        public SystemParameters SystemParameters;
-
-        //Modelling task
-        public string Action;
-        public string ActionParams;
-        public string System;
-
-        public string Orthogonalization;    //normalization method
-        public int irate;                   //iterations between normalization
-        public string OutDir = "";
-        public Size PicSize;
-
-
-        private string configFile = "systems_config.xml";
-
-        private XDocument _configDoc = null;
-        private XDocument configDoc {
-            get {
-                try {
-                    _configDoc = XDocument.Load(configFile);
-                }
-                catch {
-                    throw new ArgumentException("Unable to read configuration file " + configFile);
-                }
-                return _configDoc;
-            }
-        }
-
-
-        private XElement _system = null;
-
-        private XElement SystemEl
+        public Parameters()
         {
-            get
-            {
-                if (_system == null)
-                {
-                    string system = configDoc.Root.Element("ModelingTask").Element("TargetSystem").Value.ToLower();
-                    XElement systems = configDoc.Root.Element("Systems");
-
-                    foreach (XElement node in systems.Descendants("System"))
-                        if (node.Attribute("name").Value.ToLower().Equals(system))
-                        {
-                            _system = node;
-                            break;
-                        }
-                }
-
-                return _system;
-            }
-        }
-
-        public Parameters() {
             try
             {
-                XElement modelingTask = configDoc.Root.Element("ModelingTask");
+                var config = XDocument.Load(ConfigFile);
+                var modelingTaskEl = config.Root.Element("ModelingTask");
+                var orthogonalizationEl = modelingTaskEl.Element("Orthogonalization");
 
-                Action = modelingTask.Element("Action").Attribute("name").Value;
-                ActionParams = modelingTask.Element("Action").Value;
-                System = modelingTask.Element("TargetSystem").Value;
-                OutDir = modelingTask.Element("Output").Attribute("outDir").Value;
+                System = modelingTaskEl.Element("TargetSystem").Value;
+                Action = modelingTaskEl.Element("Action").Attribute("name").Value;
+                ActionParams = modelingTaskEl.Element("Action").Value;
+                Orthogonalization = orthogonalizationEl.Attribute("type").Value;
+                OutDir = modelingTaskEl.Element("Output").Attribute("outDir").Value;
+                PicSize = new Size(Convert.ToInt32(modelingTaskEl.Element("Output").Attribute("picWidth").Value), Convert.ToInt32(modelingTaskEl.Element("Output").Attribute("picHeight").Value));
 
-                PicSize = new Size(Convert.ToInt32(modelingTask.Element("Output").Attribute("picWidth").Value), Convert.ToInt32(modelingTask.Element("Output").Attribute("picHeight").Value));
+                var systemEl = config.Root.Element("Systems").Descendants("System")
+                    .First(e => e.Attribute("name").Value.Equals(System, StringComparison.InvariantCultureIgnoreCase));
 
-                XElement orthogonalizationParams = modelingTask.Element("Orthogonalization");
-                Orthogonalization = orthogonalizationParams.Attribute("type").Value;
-                irate = int.Parse(orthogonalizationParams.Attribute("interval").Value, CultureInfo.InvariantCulture);
+                var parametersEl = systemEl.Element("Parameters");
 
+                Iterations = int.Parse(orthogonalizationEl.Attribute("interval").Value, CultureInfo.InvariantCulture);
 
-                SystemParameters = new SystemParameters();
                 SystemParameters.SystemName = System;
-                SystemParameters.ModellingTime = Convert.ToDouble(SystemEl.Element("ModellingTime").Value);
+                SystemParameters.ModellingTime = Convert.ToDouble(systemEl.Element("ModellingTime").Value);
 
-                Parameter stepParam = new Parameter();
-                stepParam.Start = Convert.ToDouble(SystemEl.Element("Parameters").Element("Step").Attribute("start").Value);
-                stepParam.Step = Convert.ToDouble(SystemEl.Element("Parameters").Element("Step").Attribute("step").Value);
-                stepParam.End = Convert.ToDouble(SystemEl.Element("Parameters").Element("Step").Attribute("end").Value);
-                stepParam.Default = Convert.ToDouble(SystemEl.Element("Parameters").Element("Step").Attribute("default").Value);
+                var stepParam = GetParameterFromXElement(parametersEl.Element("Step"));
                 SystemParameters.Step = stepParam;
 
-                foreach (XElement paramEl in SystemEl.Element("Parameters").Descendants("Param"))
+                foreach (var paramEl in parametersEl.Descendants("Param"))
                 {
-                    Parameter param = new Parameter();
+                    var param = GetParameterFromXElement(paramEl);
                     param.Name = paramEl.Attribute("name").Value;
-                    param.Start = Convert.ToDouble(paramEl.Attribute("start").Value);
-                    param.Step = Convert.ToDouble(paramEl.Attribute("step").Value);
-                    param.End = Convert.ToDouble(paramEl.Attribute("end").Value);
-                    param.Default = Convert.ToDouble(paramEl.Attribute("default").Value);
+
                     SystemParameters.ListParameters.Add(param);
                 }
-
             }
-            catch (Exception Exception) {
-                throw new ArgumentException("Unable to read params: " + Exception.Message + Exception.StackTrace);
+            catch (Exception ex)
+            {
+                throw new ArgumentException("Unable to read params: " + ex);
             }
         }
-        
+
+        //System
+        public SystemParameters SystemParameters { get; private set; } = new SystemParameters();
+
+        //Modelling task
+        public string Action { get; private set; }
+
+        public string ActionParams { get; private set; }
+
+        public string System { get; private set; }
+
+        //normalization method
+        public string Orthogonalization { get; private set; }
+
+        //iterations between normalization
+        public int Iterations { get; private set; }
+
+        public string OutDir { get; private set; } = string.Empty;
+
+        public Size PicSize { get; private set; }
+
+        private Parameter GetParameterFromXElement(XElement el)
+        {
+            var parameter = new Parameter();
+            parameter.Start = Convert.ToDouble(el.Attribute("start").Value);
+            parameter.Step = Convert.ToDouble(el.Attribute("step").Value);
+            parameter.End = Convert.ToDouble(el.Attribute("end").Value);
+            parameter.Default = Convert.ToDouble(el.Attribute("default").Value);
+            return parameter;
+        }
     }
 }

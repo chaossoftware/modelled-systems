@@ -56,7 +56,7 @@ namespace ModelledSystems
                     routine = new SystemOut(OutDir, parameters.SystemParameters);
                     break;
                 case "benettin_les":
-                    routine = new BenettinSpectrum(OutDir, parameters.SystemParameters, parameters.Orthogonalization, parameters.irate);
+                    routine = new BenettinSpectrum(OutDir, parameters.SystemParameters, parameters.Orthogonalization, parameters.Iterations);
                     break;
                 case "benettin_lle":
                     routine = new BenettinLLE(OutDir, parameters.SystemParameters);

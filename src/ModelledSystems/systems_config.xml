@@ -1,5 +1,18 @@
 <config>
 
+  <ModelingTask>
+
+    <TargetSystem>logistic</TargetSystem>
+    <Action name="signal"></Action>
+    <!-- bifurcation , signal , benettin_les , benettin_lle , benettin_lle_param , le_map , stefanski -->
+    <!--Action name="stefanski">5000|0.0001</Action-->
+
+    <Orthogonalization type="mgs" interval="1"/>
+    <!-- cgs , mgs , hh -->
+    <Output outDir="Output" picHeight="400" picWidth="640"></Output>
+
+  </ModelingTask>
+
   <Systems>
 
     <!-- MAPS -->
@@ -70,21 +83,5 @@
     </System>
 
   </Systems>
-
-
-  <ModelingTask>
-
-    <TargetSystem>logistic</TargetSystem>
-
-    <Action name="signal"></Action>
-    <!-- bifurcation , signal , benettin_les , benettin_lle , benettin_lle_param , le_map , stefanski -->
-    <!--Action name="stefanski">5000|0.0001</Action-->
-
-    <Orthogonalization type="mgs" interval="1"/>
-    <!-- cgs , mgs , hh -->
-
-    <Output outDir="Output" picHeight="400" picWidth="640"></Output>
-
-  </ModelingTask>
 
 </config>
