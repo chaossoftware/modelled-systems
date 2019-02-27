@@ -1,5 +1,4 @@
 ﻿using MathLib.Data;
-using MathLib.DrawEngine;
 using MathLib.DrawEngine.Charts;
 using MathLib.IO;
 using MathLib.MathMethods.Solvers;

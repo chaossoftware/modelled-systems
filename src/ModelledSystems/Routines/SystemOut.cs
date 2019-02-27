@@ -8,34 +8,34 @@ namespace ModelledSystems.Routines
 {
     internal class SystemOut : Routine
     {
-        long TotIter;
-        int EqN;
-        double EqStep;
-        double[,] outArray;
-        SystemEquations Equations;
+        private readonly long totalIterations;
+        private readonly int eqN;
+        private readonly double eqStep;
+        private readonly double[,] outArray;
+        private readonly SystemEquations equations;
 
         public SystemOut(string outDir, SystemParameters systemParameters) : base (outDir, systemParameters)
         {
-            EqStep = SysParameters.Step.Default;
+            eqStep = SysParameters.Step.Default;
 
-            Equations = GetSystemEquations(false, SysParameters.Defaults, EqStep);
-            EqN = Equations.EquationsCount;
+            equations = GetSystemEquations(false, SysParameters.Defaults, eqStep);
+            eqN = equations.EquationsCount;
             
-            TotIter = (long)(SysParameters.ModellingTime / EqStep);
+            totalIterations = (long)(SysParameters.ModellingTime / eqStep);
 
-            outArray = new double[TotIter, EqN];
+            outArray = new double[totalIterations, eqN];
 
-            Equations.Solver.Init();
+            equations.Solver.Init();
         }
 
         public override void Run()
         {
-            for (int i = 0; i < TotIter; i++)
+            for (int i = 0; i < totalIterations; i++)
             {
-                Equations.Solver.NexStep();
+                equations.Solver.NexStep();
 
-                for (int k = 0; k < EqN; k++)
-                    outArray[i, k] = Equations.Solver.Solution[0, k];
+                for (int k = 0; k < eqN; k++)
+                    outArray[i, k] = equations.Solver.Solution[0, k];
             }
 
             WriteResults();
@@ -45,28 +45,28 @@ namespace ModelledSystems.Routines
         {
             StringBuilder output = new StringBuilder();
 
-            string fileNameStart = Path.Combine(OutDir, Equations.ToFileName());
+            string fileNameStart = Path.Combine(OutDir, equations.ToFileName());
 
-            double[] xt = new double[TotIter];
-            double[] yt = new double[TotIter];
-            double[] zt = new double[TotIter];
+            double[] xt = new double[totalIterations];
+            double[] yt = new double[totalIterations];
+            double[] zt = new double[totalIterations];
 
             double t = 0;
 
-            for (int cnt = 0; cnt < TotIter; cnt++)
+            for (int cnt = 0; cnt < totalIterations; cnt++)
             {
                 output.AppendFormat("{0:F5}", t);
 
-                for (int k = 0; k < EqN; k++)
+                for (int k = 0; k < eqN; k++)
                     output.AppendFormat("\t{0:F15}", outArray[cnt, k]);
 
                 output.Append("\n");
 
                 xt[cnt] = outArray[cnt, 0];
-                yt[cnt] = EqN > 1 ? outArray[cnt, 1] : 1;
-                zt[cnt] = EqN > 2 ? outArray[cnt, 2] : 1;
+                yt[cnt] = eqN > 1 ? outArray[cnt, 1] : 1;
+                zt[cnt] = eqN > 2 ? outArray[cnt, 2] : 1;
 
-                t += EqStep;
+                t += eqStep;
             }
 
             DataWriter.CreateDataFile(fileNameStart, output.ToString());

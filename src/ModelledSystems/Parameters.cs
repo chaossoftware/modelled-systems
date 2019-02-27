@@ -23,7 +23,9 @@ namespace ModelledSystems
                 ActionParams = modelingTaskEl.Element("Action").Value;
                 Orthogonalization = orthogonalizationEl.Attribute("type").Value;
                 OutDir = modelingTaskEl.Element("Output").Attribute("outDir").Value;
-                PicSize = new Size(Convert.ToInt32(modelingTaskEl.Element("Output").Attribute("picWidth").Value), Convert.ToInt32(modelingTaskEl.Element("Output").Attribute("picHeight").Value));
+                PicSize = new Size(
+                    Convert.ToInt32(modelingTaskEl.Element("Output").Attribute("picWidth").Value), 
+                    Convert.ToInt32(modelingTaskEl.Element("Output").Attribute("picHeight").Value));
 
                 var systemEl = config.Root.Element("Systems").Descendants("System")
                     .First(e => e.Attribute("name").Value.Equals(System, StringComparison.InvariantCultureIgnoreCase));

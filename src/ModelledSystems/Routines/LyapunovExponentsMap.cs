@@ -1,74 +1,73 @@
-﻿using MathLib.DrawEngine.Charts;
+﻿using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using MathLib.DrawEngine.Charts;
 using MathLib.MathMethods.Lyapunov;
 using MathLib.MathMethods.Orthogonalization;
 using MathLib.MathMethods.Solvers;
 using MathLib.Threading;
-using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 
 namespace ModelledSystems.Routines
 {
-    class LyapunovExponentsMap : Routine
+    internal class LyapunovExponentsMap : Routine
     {
+        private readonly double xBegin, yBegin, xStep, yStep, xEnd, yEnd;
+        private readonly int xParamIndex, yParamIndex;
+        private readonly double[,] arr;
 
-        double Xbegin, Ybegin, Xstep, Ystep, Xend, Yend;
-        int XparamIndex, YparamIndex;
-        private static double[,] arr;
+        private readonly int xIterations, yIterations;
+        private readonly double eqStep;
 
-        int TotIter, Xiterations, Yiterations;
-        double EqStep;
-
-        static int step, currentIteration;
-
-        Parameter Xparam, Yparam;
+        private readonly int step;
+        private int currentIteration;
+        private readonly Parameter xParameter, yParameter;
 
         public LyapunovExponentsMap(string outDir, SystemParameters systemParameters, int xParamIndex, int yParamIndex) : base(outDir, systemParameters)
         {
-            XparamIndex = xParamIndex;
-            YparamIndex = yParamIndex;
-            EqStep = SysParameters.Step.Default;
+            this.xParamIndex = xParamIndex;
+            this.yParamIndex = yParamIndex;
+            eqStep = SysParameters.Step.Default;
 
-            Xparam = SysParameters.ListParameters[xParamIndex];
-            Yparam = SysParameters.ListParameters[yParamIndex];
+            xParameter = SysParameters.ListParameters[xParamIndex];
+            yParameter = SysParameters.ListParameters[yParamIndex];
 
-            Xbegin = Xparam.Start;
-            Ybegin = Yparam.Start;
-            Xstep = Xparam.Step;
-            Ystep = Yparam.Step;
-            Xend = Xparam.End;
-            Yend = Yparam.End;
+            xBegin = xParameter.Start;
+            yBegin = yParameter.Start;
+            xStep = xParameter.Step;
+            yStep = yParameter.Step;
+            xEnd = xParameter.End;
+            yEnd = yParameter.End;
 
-            Xiterations = (int)((Xend - Xbegin) / Xstep);
-            Yiterations = (int)((Yend - Ybegin) / Ystep);
+            xIterations = (int)((xEnd - xBegin) / xStep);
+            yIterations = (int)((yEnd - yBegin) / yStep);
 
             currentIteration = 1;
-            TotIter = Xiterations * Yiterations;
+            var totalIterations = xIterations * yIterations;
 
-            step = TotIter / Console.BufferWidth;
+            step = totalIterations / Console.BufferWidth;
 
-            arr = new double[Xiterations, Yiterations];
+            arr = new double[xIterations, yIterations];
 
-            for (int i = 0; i < Xiterations; i++)
-                for (int j = 0; j < Yiterations; j++)
+            for (int i = 0; i < xIterations; i++)
+                for (int j = 0; j < yIterations; j++)
                     arr[i, j] = -1;
         }
-
 
         public override void Run()
         {
             ThreadedRun threadedRun = new ThreadedRun();
             double yVal;
-            double xVal = Xbegin;
+            double xVal = xBegin;
 
-            for (int x = 0; x < Xiterations; x++)
+            for (int x = 0; x < xIterations; x++)
             {
-                xVal += Xstep;
-                yVal = Ybegin;
-                for (int y = 0; y < Yiterations; y++)
+                xVal += xStep;
+                yVal = yBegin;
+
+                for (int y = 0; y < yIterations; y++)
                 {
-                    yVal += Ystep;
+                    yVal += yStep;
                     threadedRun.RunOnSeparateProcessor(Func, new object[4] { xVal, yVal, x, y });
 
                     if (currentIteration++ % step == 0)
@@ -81,67 +80,72 @@ namespace ModelledSystems.Routines
             GetImage();
         }
 
-
         private void GetImage()
         {
             ColouredMapPlot po = new ColouredMapPlot(arr, Size, new ColorCondition4());
-            po.Xmin = Xbegin;
-            po.Xmax = Xend;
-            po.Ymin = Ybegin;
-            po.Ymax = Yend;
-            po.LabelX = Xparam.Name;
-            po.LabelY = Yparam.Name;
+            po.Xmin = xBegin;
+            po.Xmax = xEnd;
+            po.Ymin = yBegin;
+            po.Ymax = yEnd;
+            po.LabelX = xParameter.Name;
+            po.LabelY = yParameter.Name;
             po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_map.png"), ImageFormat.Png);
         }
 
-
         public void Func(object[] parameters)
         {
-
             double xparam = (double)parameters[0], yParam = (double)parameters[1];
-            int _x = (int)parameters[2], _y = (int)parameters[3];
+            int x = (int)parameters[2], y = (int)parameters[3];
 
             int rez = 0;
-            long _totIter;
+            long totIter;
             double[] R, vars;
 
             vars = SysParameters.Defaults;
-            vars[XparamIndex] = xparam;
-            vars[YparamIndex] = yParam;
+            vars[xParamIndex] = xparam;
+            vars[yParamIndex] = yParam;
 
-            SystemEquations equations = GetSystemEquations(true, vars, EqStep);
-            _totIter = (long)(SysParameters.ModellingTime / equations.Solver.Step);
+            SystemEquations equations = GetSystemEquations(true, vars, eqStep);
+            totIter = (long)(SysParameters.ModellingTime / equations.Solver.Step);
             Orthogonalization ort = new ModifiedGrammSchmidt(equations.EquationsCount);
             BenettinMethod lyap = new BenettinMethod(equations.EquationsCount);
 
             R = new double[equations.EquationsCount];
             equations.Solver.Init();
 
-            for (int i = 0; i < _totIter; i++)
+            for (int i = 0; i < totIter; i++)
             {
                 equations.Solver.NexStep();
                 ort.Perform(equations.Solver.Solution, R);
                 lyap.calculateLE(R, equations.Solver.Time);
-                _totIter--;
+                totIter--;
             }
 
             for (int k = 0; k < equations.EquationsCount; k++)
                 if (lyap.lespec[k] > 0)
                     rez++;
 
-            arr[_x, _y] = rez;
+            arr[x, y] = rez;
         }
     }
 
     class ColorCondition4 : MathLib.DrawEngine.Charts.ColorMaps.ColorMap
     {
-        public Color GetColor(double i)
+        public Color GetColor(double value)
         {
-            if (i == 3) return Color.Black;
-            if (i == 2) return Color.DarkGreen;
-            if (i == 1) return Color.Green;
-            if (i == 0) return Color.Blue;
-            return Color.White;
+            switch ((int)value)
+            {
+                case 3:
+                    return Color.Black;
+                case 2:
+                    return Color.DarkGreen;
+                case 1:
+                    return Color.Green;
+                case 0:
+                    return Color.Blue;
+                default:
+                    return Color.White;
+            }
         }
     }
 }

@@ -1,20 +1,22 @@
-﻿using MathLib.MathMethods.Solvers;
-using System;
+﻿using System;
 using System.Drawing;
+using MathLib.MathMethods.Solvers;
 
 namespace ModelledSystems.Routines
 {
     abstract class Routine
     {
-        protected string OutDir;
-        protected SystemParameters SysParameters;
-        public Size Size;
-
-        public Routine(string outDir, SystemParameters parameters)
+        protected Routine(string outDir, SystemParameters parameters)
         {
             OutDir = outDir;
             SysParameters = parameters;
         }
+
+        protected string OutDir { get; set; }
+
+        protected SystemParameters SysParameters { get; set; }
+
+        public Size Size { get; set; }
 
         public abstract void Run();
 
@@ -45,9 +47,9 @@ namespace ModelledSystems.Routines
                     eq = new Tinkerbell(linearized, vars);
                     break;
                 default:
-                    throw new Exception("No such system");
-
+                    throw new ArgumentException($"No such system: {SysParameters.SystemName}");
             }
+
             eq.Solver.Step = step;
             return eq;
         }
