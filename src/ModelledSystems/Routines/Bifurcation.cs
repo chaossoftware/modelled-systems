@@ -51,7 +51,7 @@ namespace ModelledSystems.Routines
 
             DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_dataBifur_" + Param.Name), SyncMapSeries.ToString());
 
-            MapPlot po = new MapPlot(SyncMapSeries, Size, 1);
+            var po = new ScatterPlot(Size, SyncMapSeries);
             po.LabelX = Param.Name;
             po.LabelY = "X";
             po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_bifur_" + Param.Name + ".png"), ImageFormat.Png);

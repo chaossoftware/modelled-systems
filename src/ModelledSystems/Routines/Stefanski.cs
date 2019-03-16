@@ -52,7 +52,7 @@ namespace ModelledSystems.Routines
             //DataWriter.CreateDataFile("fileName", SyncMapSeries.ToString());
 
             Size size = new Size(320, 240);
-            MapPlot po = new MapPlot(SyncMapSeries, size, 1);
+            var po = new ScatterPlot(size, SyncMapSeries);
             po.LabelX = "p";
             po.LabelY = "Δ";
             po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_stefanski.png"), ImageFormat.Png);
