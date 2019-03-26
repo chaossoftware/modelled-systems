@@ -70,7 +70,7 @@ namespace ModelledSystems.Routines
             }
 
             DataWriter.CreateDataFile(fileNameStart, output.ToString());
-            Model3D.Create3daModelFile(fileNameStart + ".ply", xt, yt, zt);
+            Model3D.Create3daModelFile(fileNameStart + ".3da", xt, yt, zt);
             Sound.CreateWavFile(fileNameStart + ".wav", yt);
         }
     }
