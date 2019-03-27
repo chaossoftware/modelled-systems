@@ -52,7 +52,7 @@ namespace ModelledSystems.Routines
 
             DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_data_lyapunov_param_" + Param.Name), SyncMapSeries.ToString());
 
-            SignalPlot po = new SignalPlot(SyncMapSeries, Size, 1);
+            var po = new LinePlot(Size, SyncMapSeries);
             po.LabelX = Param.Name;
             po.LabelY = "LLE";
             po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_param_" + Param.Name + ".png"), ImageFormat.Png);
@@ -70,8 +70,8 @@ namespace ModelledSystems.Routines
 
             double EqStep = SysParameters.Step.Default;
 
-            SystemEquations eq = GetSystemEquations(false, vars, EqStep);
-            SystemEquations eq1 = GetSystemEquations(false, vars, EqStep);
+            var eq = GetSystemEquations(false, vars, EqStep);
+            var eq1 = GetSystemEquations(false, vars, EqStep);
 
             int EqN = eq.EquationsCount;
 

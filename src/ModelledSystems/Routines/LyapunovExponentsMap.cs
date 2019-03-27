@@ -129,7 +129,7 @@ namespace ModelledSystems.Routines
         }
     }
 
-    class ColorCondition4 : MathLib.DrawEngine.Charts.ColorMaps.ColorMap
+    class ColorCondition4 : MathLib.DrawEngine.Charts.ColorMaps.IColorMap
     {
         public Color GetColor(double value)
         {
