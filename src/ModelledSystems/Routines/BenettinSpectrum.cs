@@ -53,7 +53,7 @@ namespace ModelledSystems.Routines
                 //------------------- Call Orthonormalization -------------
                 ort.Perform(Equations.Solver.Solution, R);
 
-                lyap.calculateLE(R, Equations.Solver.Time);
+                lyap.CalculateLyapunovSpectrum(R, Equations.Solver.Time);
 
                 //------------------- normalize and print exponent ------------
                 //for (int k = 0; k < equations.N; k++)
@@ -66,10 +66,10 @@ namespace ModelledSystems.Routines
 
         private void WriteResults()
         {
-            Console.WriteLine(lyap.GetResults().GetInfo());
+            Console.WriteLine(lyap.Result.ToString());
             string fileNameStart = Path.Combine(OutDir, Equations.ToFileName());
 
-            DataWriter.CreateDataFile(fileNameStart + ".le", lyap.GetResults().GetInfo());
+            DataWriter.CreateDataFile(fileNameStart + ".le", lyap.Result.ToString());
 
             
             StringBuilder output = new StringBuilder();
