@@ -117,12 +117,12 @@ namespace ModelledSystems.Routines
             {
                 equations.Solver.NexStep();
                 ort.Perform(equations.Solver.Solution, R);
-                lyap.calculateLE(R, equations.Solver.Time);
+                lyap.CalculateLyapunovSpectrum(R, equations.Solver.Time);
                 totIter--;
             }
 
             for (int k = 0; k < equations.EquationsCount; k++)
-                if (lyap.lespec[k] > 0)
+                if (lyap.Result.Spectrum[k] > 0)
                     rez++;
 
             arr[x, y] = rez;
