@@ -3,9 +3,9 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using MathLib.DrawEngine.Charts;
-using MathLib.MathMethods.Lyapunov;
-using MathLib.MathMethods.Orthogonalization;
-using MathLib.MathMethods.Solvers;
+using MathLib.NumericalMethods.Lyapunov;
+using MathLib.NumericalMethods.Orthogonalization;
+using MathLib.NumericalMethods.Solvers;
 using MathLib.Threading;
 
 namespace ModelledSystems.Routines

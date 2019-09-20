@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using MathLib.MathMethods.Solvers;
+using MathLib.NumericalMethods.Solvers;
 
 namespace ModelledSystems.Routines
 {

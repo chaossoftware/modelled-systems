@@ -1,4 +1,4 @@
-﻿using MathLib.MathMethods.Solvers;
+﻿using MathLib.NumericalMethods.Solvers;
 using System;
 using System.IO;
 using System.Text;

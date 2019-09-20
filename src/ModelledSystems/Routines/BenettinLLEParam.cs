@@ -2,7 +2,7 @@
 using MathLib.DrawEngine;
 using MathLib.DrawEngine.Charts;
 using MathLib.IO;
-using MathLib.MathMethods.Solvers;
+using MathLib.NumericalMethods.Solvers;
 using MathLib.Threading;
 using System;
 using System.Collections.Concurrent;

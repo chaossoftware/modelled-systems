@@ -1,7 +1,7 @@
 ﻿using MathLib.IO;
-using MathLib.MathMethods.Lyapunov;
-using MathLib.MathMethods.Orthogonalization;
-using MathLib.MathMethods.Solvers;
+using MathLib.NumericalMethods.Lyapunov;
+using MathLib.NumericalMethods.Orthogonalization;
+using MathLib.NumericalMethods.Solvers;
 using System;
 using System.IO;
 using System.Text;

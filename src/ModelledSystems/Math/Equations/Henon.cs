@@ -1,5 +1,5 @@
 ﻿using System;
-using MathLib.MathMethods.Solvers;
+using MathLib.NumericalMethods.Solvers;
 
 namespace ModelledSystems
 {

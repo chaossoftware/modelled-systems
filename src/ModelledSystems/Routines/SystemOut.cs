@@ -1,5 +1,5 @@
 ﻿using MathLib.IO;
-using MathLib.MathMethods.Solvers;
+using MathLib.NumericalMethods.Solvers;
 using MathLib.Transform;
 using System.IO;
 using System.Text;

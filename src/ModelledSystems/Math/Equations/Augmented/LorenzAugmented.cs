@@ -1,4 +1,4 @@
-﻿using MathLib.MathMethods.Solvers;
+﻿using MathLib.NumericalMethods.Solvers;
 using System;
 
 namespace ModelledSystems
