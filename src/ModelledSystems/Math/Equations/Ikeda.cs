@@ -7,11 +7,12 @@ namespace ModelledSystems
     /// <summary>
     /// Ikeda system
     /// </summary>
-    public class Ikeda : SystemEquations {
+    public class Ikeda : SystemEquations
+    {
 
-        private double a = 20.0;
-        private double b = 1.0;
-        private double c = Math.Atan(1.0);
+        private readonly double _a = 20.0;
+        private readonly double _b = 1.0;
+        private readonly double _c = Math.Atan(1.0);
 
         public Ikeda(bool linearized = false) : base(linearized)
         {
@@ -20,9 +21,9 @@ namespace ModelledSystems
 
         public Ikeda(bool linearized = false, params double[] vars) : base(linearized)
         {
-            a = vars[0];
-            b = vars[1];
-            c = vars[2];
+            _a = vars[0];
+            _b = vars[1];
+            _c = vars[2];
             init();
 
         }
@@ -39,10 +40,11 @@ namespace ModelledSystems
 
         public override string Name => "Ikeda DDE";
 
-        public override double[,] Derivatives(double[,] x, double[,] dxdt) {
+        public override double[,] Derivatives(double[,] x, double[,] dxdt)
+        {
 
             //Ikeda Equations
-            dxdt[0, 0] = x[0, 0] + Solver.Step * (a * Math.Sin(x[0, EquationsCount - 1] - c) * Math.Sin(x[0, EquationsCount - 1] - c) - b * x[0, 0]);
+            dxdt[0, 0] = x[0, 0] + Solver.Step * (_a * Math.Sin(x[0, EquationsCount - 1] - _c) * Math.Sin(x[0, EquationsCount - 1] - _c) - _b * x[0, 0]);
 
             for (int i = 0; i < EquationsCount - 1; i++)
                 dxdt[0, i + 1] = x[0, i];
@@ -52,7 +54,7 @@ namespace ModelledSystems
 
                 //Linearized Equations
                 for (int i = 0; i < EquationsCount; i++)
-                    dxdt[1, i] = x[1, i] + Solver.Step * (x[EquationsCount, i] * 2.0 * a * Math.Sin(x[0, EquationsCount - 1] - c) * Math.Cos(x[0, EquationsCount - 1] - c) - b * x[1, i]);
+                    dxdt[1, i] = x[1, i] + Solver.Step * (x[EquationsCount, i] * 2.0 * _a * Math.Sin(x[0, EquationsCount - 1] - _c) * Math.Cos(x[0, EquationsCount - 1] - _c) - _b * x[1, i]);
 
                 for (int i = 2; i <= EquationsCount; i++)
                     for (int j = 0; j < EquationsCount; j++)
@@ -63,8 +65,10 @@ namespace ModelledSystems
         }
 
 
-        public override void Init(double[,] x) {
-            for (int i = 0; i < EquationsCount; i++) {
+        public override void Init(double[,] x)
+        {
+            for (int i = 0; i < EquationsCount; i++)
+            {
                 x[0, i] = 0.9;
 
                 if (linearized)
@@ -73,12 +77,14 @@ namespace ModelledSystems
         }
 
 
-        public override string GetInfoShort() {
+        public override string GetInfoShort()
+        {
             throw new NotImplementedException();
         }
 
 
-        public override string GetInfoFull() {
+        public override string GetInfoFull()
+        {
             throw new NotImplementedException();
         }
 

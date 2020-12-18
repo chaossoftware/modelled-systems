@@ -8,32 +8,41 @@ using System.Globalization;
 
 namespace ModelledSystems
 {
-    class Program {
+    class Program
+    {
+        private readonly Parameters _parameters;
+        private readonly string _outDir;
+        private readonly Size _size;
 
-        static Parameters parameters = new Parameters();
-        static string OutDir = parameters.OutDir + "\\" + parameters.System;
-        static Size Size = parameters.PicSize;
+        public Program()
+        {
+            _parameters = new Parameters();
+            _outDir = _parameters.OutDir + "\\" + _parameters.System;
+            _size = _parameters.PicSize;
+        }
 
-
-        public static void Main(string[] args) {
+        public static void Main(string[] args)
+        {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
 
-            Init();
-            PerformAction();
+            var program = new Program();
+
+            program.Init();
+            program.PerformAction();
         }
 
-
-        private static void Init()
+        private void Init()
         {
-            if (!Directory.Exists(OutDir))
-                Directory.CreateDirectory(OutDir);
+            if (!Directory.Exists(_outDir))
+            {
+                Directory.CreateDirectory(_outDir);
+            }
 
-            Console.Title = parameters.System + ": " + parameters.Action;
+            Console.Title = _parameters.System + ": " + _parameters.Action;
         }
 
-
-        private static void PerformAction()
+        private void PerformAction()
         {
             Console.Write("\nPerforming calculation...\n");
             Stopwatch timer = new Stopwatch();
@@ -46,45 +55,43 @@ namespace ModelledSystems
             Console.Read();
         }
 
-
-        private static Routine GetRoutine()
+        private Routine GetRoutine()
         {
             Routine routine;
-            switch(parameters.Action.ToLower())
+            switch (_parameters.Action.ToLower())
             {
                 case "signal":
-                    routine = new SystemOut(OutDir, parameters.SystemParameters);
+                    routine = new SystemOut(_outDir, _parameters.SystemParameters);
                     break;
                 case "benettin_les":
-                    routine = new BenettinSpectrum(OutDir, parameters.SystemParameters, parameters.Orthogonalization, parameters.Iterations);
+                    routine = new BenettinSpectrum(_outDir, _parameters.SystemParameters, _parameters.Orthogonalization, _parameters.Iterations);
                     break;
                 case "benettin_lle":
-                    routine = new BenettinLLE(OutDir, parameters.SystemParameters);
+                    routine = new BenettinLLE(_outDir, _parameters.SystemParameters);
                     break;
                 case "benettin_lle_param":
-                    int paramIndexLle = Convert.ToInt32(parameters.ActionParams);
-                    routine = new BenettinLLEParam(OutDir, parameters.SystemParameters, paramIndexLle);
+                    int paramIndexLle = Convert.ToInt32(_parameters.ActionParams);
+                    routine = new BenettinLLEParam(_outDir, _parameters.SystemParameters, paramIndexLle);
                     break;
                 case "le_map":
-                    int mapX = Convert.ToInt32(parameters.ActionParams.Split('|')[0]);
-                    int mapY = Convert.ToInt32(parameters.ActionParams.Split('|')[1]);
-                    routine = new LyapunovExponentsMap(OutDir, parameters.SystemParameters, mapX, mapY);
+                    int mapX = Convert.ToInt32(_parameters.ActionParams.Split('|')[0]);
+                    int mapY = Convert.ToInt32(_parameters.ActionParams.Split('|')[1]);
+                    routine = new LyapunovExponentsMap(_outDir, _parameters.SystemParameters, mapX, mapY);
                     break;
                 case "bifurcation":
-                    int paramIndex = Convert.ToInt32(parameters.ActionParams);
-                    routine = new Bifurcation(OutDir, parameters.SystemParameters, paramIndex);
+                    int paramIndex = Convert.ToInt32(_parameters.ActionParams);
+                    routine = new Bifurcation(_outDir, _parameters.SystemParameters, paramIndex);
                     break;
                 case "stefanski":
-                    int p = Convert.ToInt32(parameters.ActionParams.Split('|')[0]);
-                    double pstep = Convert.ToDouble(parameters.ActionParams.Split('|')[1]);
-                    routine = new Stefanski(OutDir, parameters.SystemParameters, p, pstep);
+                    int p = Convert.ToInt32(_parameters.ActionParams.Split('|')[0]);
+                    double pstep = Convert.ToDouble(_parameters.ActionParams.Split('|')[1]);
+                    routine = new Stefanski(_outDir, _parameters.SystemParameters, p, pstep);
                     break;
                 default:
                     return null;
-
             }
 
-            routine.Size = Size;
+            routine.Size = _size;
             return routine;
         }
     }
