@@ -1,5 +1,5 @@
 ﻿using System;
-using MathLib.NumericalMethods.Solvers;
+using ChaosSoft.Core.NumericalMethods.Solvers;
 
 namespace ModelledSystems
 {

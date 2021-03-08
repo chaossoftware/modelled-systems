@@ -2,11 +2,11 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using MathLib.DrawEngine.Charts;
-using MathLib.NumericalMethods.Lyapunov;
-using MathLib.NumericalMethods.Orthogonalization;
-using MathLib.NumericalMethods.Solvers;
-using MathLib.Threading;
+using ChaosSoft.Core.DrawEngine.Charts;
+using ChaosSoft.Core.NumericalMethods.Lyapunov;
+using ChaosSoft.Core.NumericalMethods.Orthogonalization;
+using ChaosSoft.Core.NumericalMethods.Solvers;
+using ChaosSoft.Core.Threading;
 
 namespace ModelledSystems.Routines
 {
@@ -129,7 +129,7 @@ namespace ModelledSystems.Routines
         }
     }
 
-    class ColorCondition4 : MathLib.DrawEngine.Charts.ColorMaps.IColorMap
+    class ColorCondition4 : ChaosSoft.Core.DrawEngine.Charts.ColorMaps.IColorMap
     {
         public Color GetColor(double value)
         {

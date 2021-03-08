@@ -1,7 +1,7 @@
-﻿using MathLib.Data;
-using MathLib.DrawEngine;
-using MathLib.DrawEngine.Charts;
-using MathLib.Threading;
+﻿using ChaosSoft.Core.Data;
+using ChaosSoft.Core.DrawEngine;
+using ChaosSoft.Core.DrawEngine.Charts;
+using ChaosSoft.Core.Threading;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;

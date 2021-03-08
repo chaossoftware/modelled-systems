@@ -1,6 +1,6 @@
-﻿using MathLib.IO;
-using MathLib.NumericalMethods.Solvers;
-using MathLib.Transform;
+﻿using ChaosSoft.Core.IO;
+using ChaosSoft.Core.NumericalMethods.Solvers;
+using ChaosSoft.Core.Transform;
 using System.IO;
 using System.Text;
 

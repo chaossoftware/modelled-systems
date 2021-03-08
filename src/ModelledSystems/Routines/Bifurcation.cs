@@ -1,8 +1,8 @@
-﻿using MathLib.Data;
-using MathLib.DrawEngine.Charts;
-using MathLib.IO;
-using MathLib.NumericalMethods.Solvers;
-using MathLib.Threading;
+﻿using ChaosSoft.Core.Data;
+using ChaosSoft.Core.DrawEngine.Charts;
+using ChaosSoft.Core.IO;
+using ChaosSoft.Core.NumericalMethods.Solvers;
+using ChaosSoft.Core.Threading;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing.Imaging;
