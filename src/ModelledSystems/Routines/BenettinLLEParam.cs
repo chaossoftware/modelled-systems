@@ -1,4 +1,5 @@
-﻿using ChaosSoft.Core.Data;
+﻿using ChaosSoft.Core;
+using ChaosSoft.Core.Data;
 using ChaosSoft.Core.DrawEngine;
 using ChaosSoft.Core.DrawEngine.Charts;
 using ChaosSoft.Core.IO;
@@ -98,8 +99,11 @@ namespace ModelledSystems.Routines
                 eq1.Solver.NexStep();
 
                 double dl2 = 0;
+
                 for (int _i = 0; _i < eq.EquationsCount; _i++)
-                    dl2 += Math.Pow(eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i], 2);
+                {
+                    dl2 += FastMath.Pow2(eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i]);
+                }
 
                 if (dl2 > 0)
                 {
@@ -107,7 +111,10 @@ namespace ModelledSystems.Routines
                     double rs = 1 / Math.Sqrt(df);
 
                     for (int _i = 0; _i < eq.EquationsCount; _i++)
+                    {
                         eq1.Solver.Solution[0, _i] = eq.Solver.Solution[0, _i] + rs * (eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i]);
+                    }
+
                     lsum += Math.Log(df);
                     nl++;
                 }

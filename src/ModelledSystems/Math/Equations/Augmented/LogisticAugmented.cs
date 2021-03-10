@@ -1,4 +1,5 @@
-﻿using ChaosSoft.Core.NumericalMethods.Solvers;
+﻿using ChaosSoft.Core;
+using ChaosSoft.Core.NumericalMethods.Solvers;
 using System;
 
 namespace ModelledSystems
@@ -30,7 +31,7 @@ namespace ModelledSystems
             double x00 = x[0, 1] + x[0, 2];
 
             //Nonlinear Logistic map equations:
-            dxdt[0, 0] = a * x00 - a * Math.Pow(x00, 2);
+            dxdt[0, 0] = a * x00 - a * FastMath.Pow2(x00);
             dxdt[0, 1] = a * x[0, 1] * (1 - x[0, 1]);
             dxdt[0, 2] = (dxdt[0, 0] - dxdt[0, 1]) * Math.Exp(-p);
 

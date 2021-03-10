@@ -1,4 +1,5 @@
-﻿using ChaosSoft.Core.NumericalMethods.Solvers;
+﻿using ChaosSoft.Core;
+using ChaosSoft.Core.NumericalMethods.Solvers;
 using System;
 
 namespace ModelledSystems
@@ -39,9 +40,9 @@ namespace ModelledSystems
             double x01 = x[0, 3] + x[0, 5];
 
             //Nonlinear Henon map equations:
-            dxdt[0, 0] = 1.0 - a * Math.Pow(x00, 2) + x01;
+            dxdt[0, 0] = 1.0 - a * FastMath.Pow2(x00) + x01;
             dxdt[0, 1] = b * x00;
-            dxdt[0, 2] = 1 - a * Math.Pow(x[0, 2], 2) + x[0, 3];
+            dxdt[0, 2] = 1 - a * FastMath.Pow2(x[0, 2]) + x[0, 3];
             dxdt[0, 3] = b * x[0, 2];
             dxdt[0, 4] = (dxdt[0, 0] - dxdt[0, 2]) * Math.Exp(-p);
             dxdt[0, 5] = (dxdt[0, 1] - dxdt[0, 3]) * Math.Exp(-p);

@@ -1,4 +1,5 @@
-﻿using ChaosSoft.Core.NumericalMethods.Solvers;
+﻿using ChaosSoft.Core;
+using ChaosSoft.Core.NumericalMethods.Solvers;
 using System;
 using System.IO;
 using System.Text;
@@ -65,7 +66,7 @@ namespace ModelledSystems.Routines
 
             double dl2 = 0;
             for (int _i = 0; _i < eq.EquationsCount; _i++)
-                dl2 += Math.Pow(eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i], 2);
+                dl2 += FastMath.Pow2(eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i]);
 
             if (dl2 > 0)
             {
