@@ -26,7 +26,7 @@
     </System>
 
     <System name="henon">
-      <ModellingTime>100000</ModellingTime>
+      <ModellingTime>10000</ModellingTime>
       <Parameters>
         <Step start="0.5" step="1" end="1.5" default="1"/>
         <Param name="a" start="-0.122" step="0.001" end="1.426" default="1.4"/>
@@ -35,7 +35,7 @@
     </System>
 
     <System name="tinkerbell">
-      <ModellingTime>100000</ModellingTime>
+      <ModellingTime>10000</ModellingTime>
       <Parameters>
         <Step start="0.5" step="0.5" end="2" default="1"/>
         <Param name="a" start="-1.8" step="0.001" end="0.905" default="0.9"/>
@@ -46,7 +46,7 @@
     </System>
 
     <System name="henon_generalized">
-      <ModellingTime>100000</ModellingTime>
+      <ModellingTime>10000</ModellingTime>
       <Parameters>
         <Step start="0.5" step="1" end="1.5" default="1"/>
         <Param name="a" start="-0.264" step="0.001" end="1.931" default="1.9"/>
@@ -58,7 +58,7 @@
     <!-- FLOWS -->
     
     <System name="lorenz">
-      <ModellingTime>1000</ModellingTime>
+      <ModellingTime>100</ModellingTime>
       <Parameters>
         <Step start="0.005" step="0.005" end="0.02" default="0.01"/>
         <Param name="ϛ" start="4" step="0.1" end="56.1" default="10.0"/>
@@ -68,7 +68,7 @@
     </System>
 
     <System name="rossler">
-      <ModellingTime>10000</ModellingTime>
+      <ModellingTime>1000</ModellingTime>
       <Parameters>
         <Step start="0.001" step="0.001" end="1" default="0.1"/>
         <Param name="a" start="0" step="0.001" end="0.41" default="0.2"/>
