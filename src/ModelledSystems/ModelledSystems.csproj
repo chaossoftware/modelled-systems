@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ModelledSystems</RootNamespace>
     <AssemblyName>ModelledSystems</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <StartupObject>ModelledSystems.Program</StartupObject>
     <NoWin32Manifest>true</NoWin32Manifest>
