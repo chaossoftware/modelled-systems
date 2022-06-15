@@ -1,14 +1,14 @@
-﻿using System;
-using ModelledSystems.Routines;
-using System.IO;
+﻿using ModelledSystems.Routines;
+using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Threading;
 using System.Globalization;
+using System.IO;
+using System.Threading;
 
 namespace ModelledSystems
 {
-    class Program
+    internal class Program
     {
         private readonly Parameters _parameters;
         private readonly string _outDir;
