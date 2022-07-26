@@ -1,12 +1,11 @@
 ﻿using ChaosSoft.Core.Data;
-using ChaosSoft.Core.DrawEngine;
 using ChaosSoft.Core.DrawEngine.Charts;
-using ChaosSoft.Core.Threading;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace ModelledSystems.Routines
 {
@@ -17,7 +16,7 @@ namespace ModelledSystems.Routines
         int step, currentIteration;
         int Piter;
         double Pstep;
-        static int TotIter;
+        static int TotalIterations;
         int LastIter = 100;
         ConcurrentBag<DataPoint> ds;
 
@@ -28,22 +27,16 @@ namespace ModelledSystems.Routines
             Piter = pIter;
             Pstep = pstep;
             step = Piter / Console.BufferWidth;
-            TotIter = (int)(SysParameters.ModellingTime * SysParameters.Step.Default);
+            TotalIterations = (int)(SysParameters.ModellingTime * SysParameters.Step.Default);
             ds = new ConcurrentBag<DataPoint>();
         }
 
         public override void Run()
         {
-            ThreadedRun threadedRun = new ThreadedRun();
-
-
-            for (double p = 0; p < Piter * Pstep; p += Pstep)
+            Parallel.For(0, Piter, i =>
             {
-                threadedRun.RunOnSeparateProcessor(Func, new object[1] { p });
-
-                if (currentIteration++ % step == 0)
-                    Console.Write("#");
-            }
+                Func(Pstep * i);
+            });
 
             SyncMapSeries.DataPoints.AddRange(ds);
 
@@ -70,24 +63,27 @@ namespace ModelledSystems.Routines
         }
 
 
-        private void Func(object[] parameters)
+        private void Func(double p)
         {
-            double p = (double)parameters[0];
-
             AugmentedEquations AugmentedEquations = GetSystemEquations();
             AugmentedEquations.p = p;
             AugmentedEquations.Solver.Step = SysParameters.Step.Default;
             AugmentedEquations.Solver.Init();
 
-            for (int j = 0; j < TotIter; j++)
+            for (int j = 0; j < TotalIterations; j++)
             {
                 AugmentedEquations.Solver.NexStep();
-                if (j > TotIter - LastIter)
+                if (j > TotalIterations - LastIter)
                 {
                     double rez = AugmentedEquations.Solver.Solution[0, AugmentedEquations.EquationsCount - AugmentedEquations.EquationsCount / 3];
                     if (!double.IsInfinity(rez) && !double.IsNaN(rez) && rez < 100 && rez > -100)
                         ds.Add(new DataPoint(p, rez));
                 }
+            }
+
+            if (currentIteration++ % step == 0)
+            {
+                Console.Write("#");
             }
         }
 

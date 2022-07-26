@@ -68,7 +68,7 @@ namespace ModelledSystems.Routines
                 for (int y = 0; y < yIterations; y++)
                 {
                     yVal += yStep;
-                    threadedRun.RunOnSeparateProcessor(Func, new object[4] { xVal, yVal, x, y });
+                    threadedRun.RunOnSeparateProcessor(() => Func(xVal, yVal, x, y));
 
                     if (currentIteration++ % step == 0)
                         Console.Write("#");
@@ -92,11 +92,8 @@ namespace ModelledSystems.Routines
             po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_map.png"), ImageFormat.Png);
         }
 
-        public void Func(object[] parameters)
+        public void Func(double xparam, double yParam, int x, int y)
         {
-            double xparam = (double)parameters[0], yParam = (double)parameters[1];
-            int x = (int)parameters[2], y = (int)parameters[3];
-
             int rez = 0;
             long totIter;
             double[] R, vars;

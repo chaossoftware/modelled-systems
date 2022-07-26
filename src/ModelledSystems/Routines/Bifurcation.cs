@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace ModelledSystems.Routines
 {
@@ -16,7 +17,7 @@ namespace ModelledSystems.Routines
         static Timeseries SyncMapSeries;
         int step, currentIteration;
         int ParamIndex;
-        static int TotIter;
+        static int TotalIterations;
         int LastIter = 100;
         ConcurrentBag<DataPoint> ds;
         Parameter Param;
@@ -27,25 +28,17 @@ namespace ModelledSystems.Routines
             currentIteration = 1;
             ParamIndex = paramIndex;
             Param = SysParameters.ListParameters[ParamIndex];
-            TotIter = (int)((Param.End - Param.Start) / Param.Step);
-            step = TotIter / Console.BufferWidth;
+            TotalIterations = (int)((Param.End - Param.Start) / Param.Step);
+            step = TotalIterations / Console.BufferWidth;
             ds = new ConcurrentBag<DataPoint>();
         }
 
         public override void Run()
         {
-            ThreadedRun threadedRun = new ThreadedRun();
-
-
-            for (double p = Param.Start; p < Param.End; p += Param.Step)
+            Parallel.For(0, TotalIterations, i =>
             {
-                threadedRun.RunOnSeparateProcessor(Func, new object[1] { p });
-
-                if (currentIteration++ % step == 0)
-                    Console.Write("#");
-            }
-
-            threadedRun.WaitForAllTasks();
+                Func(Param.Start + Param.Step * i);
+            });
 
             SyncMapSeries.DataPoints.AddRange(ds);
 
@@ -58,10 +51,8 @@ namespace ModelledSystems.Routines
         }
 
 
-        private void Func(object[] parameters)
+        private void Func(double p)
         {
-            double p = (double)parameters[0];
-
             double[] vars;
 
             vars = SysParameters.Defaults;
@@ -70,15 +61,20 @@ namespace ModelledSystems.Routines
             SystemEquations eq = GetSystemEquations(false, vars, SysParameters.Step.Default);
             eq.Solver.Init();
 
-            for (int j = 0; j < TotIter; j++)
+            for (int j = 0; j < TotalIterations; j++)
             {
                 eq.Solver.NexStep();
-                if (j > TotIter - LastIter)
+                if (j > TotalIterations - LastIter)
                 {
                     double rez = eq.Solver.Solution[0, 0];
                     if (!double.IsInfinity(rez) && !double.IsNaN(rez) && Math.Abs(rez) < 1000)
                         ds.Add(new DataPoint(p, rez));
                 }
+            }
+
+            if (currentIteration++ % step == 0)
+            {
+                Console.Write("#");
             }
         }
     }
