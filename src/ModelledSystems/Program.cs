@@ -45,12 +45,11 @@ namespace ModelledSystems
         private void PerformAction()
         {
             Console.Write("\nPerforming calculation...\n");
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
+            Stopwatch timer = Stopwatch.StartNew();
 
             GetRoutine().Run();
 
-            timer.Stop();
+            Console.WriteLine();
             Console.WriteLine("Elapsed time: " + timer.Elapsed.ToString("mm\\:ss\\.ff"));
             Console.Read();
         }

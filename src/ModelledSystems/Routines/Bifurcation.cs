@@ -1,11 +1,9 @@
 ﻿using ChaosSoft.Core.Data;
-using ChaosSoft.Core.DrawEngine.Charts;
 using ChaosSoft.Core.IO;
 using ChaosSoft.Core.NumericalMethods.Solvers;
-using ChaosSoft.Core.Threading;
 using System;
 using System.Collections.Concurrent;
-using System.Drawing.Imaging;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -44,10 +42,16 @@ namespace ModelledSystems.Routines
 
             DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_dataBifur_" + Param.Name), SyncMapSeries.ToString());
 
-            var po = new ScatterPlot(Size, SyncMapSeries);
-            po.LabelX = Param.Name;
-            po.LabelY = "X";
-            po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_bifur_" + Param.Name + ".png"), ImageFormat.Png);
+            var plt = new ScottPlot.Plot(Size.Width, Size.Height);
+            plt.XAxis.Label(Param.Name);
+            plt.YAxis.Label("X");
+
+            foreach (DataPoint dp in SyncMapSeries.DataPoints)
+            {
+                plt.AddPoint(dp.X, dp.Y, Color.Blue, 1);
+            }
+
+            plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_bifur_" + Param.Name + ".png"));
         }
 
 

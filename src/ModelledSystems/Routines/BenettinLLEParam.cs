@@ -1,10 +1,8 @@
 ﻿using ChaosSoft.Core;
 using ChaosSoft.Core.Data;
-using ChaosSoft.Core.DrawEngine.Charts;
 using ChaosSoft.Core.IO;
 using System;
 using System.Collections.Concurrent;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -43,10 +41,12 @@ namespace ModelledSystems.Routines
 
             DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_data_lyapunov_param_" + Param.Name), SyncMapSeries.ToString());
 
-            var po = new LinePlot(Size, SyncMapSeries);
-            po.LabelX = Param.Name;
-            po.LabelY = "LLE";
-            po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_param_" + Param.Name + ".png"), ImageFormat.Png);
+
+            var plt = new ScottPlot.Plot(Size.Width, Size.Height);
+            plt.AddSignalXY(SyncMapSeries.XValues, SyncMapSeries.YValues);
+            plt.XAxis.Label(Param.Name);
+            plt.YAxis.Label("LLE");
+            plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_param_" + Param.Name + ".png"));
         }
 
 

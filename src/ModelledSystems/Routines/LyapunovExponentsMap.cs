@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using ChaosSoft.Core.DrawEngine.Charts;
+using System.Linq;
+using ChaosSoft.Core;
 using ChaosSoft.Core.NumericalMethods.Lyapunov;
 using ChaosSoft.Core.NumericalMethods.Orthogonalization;
 using ChaosSoft.Core.NumericalMethods.Solvers;
@@ -47,11 +47,15 @@ namespace ModelledSystems.Routines
 
             step = totalIterations / Console.BufferWidth;
 
-            arr = new double[xIterations, yIterations];
+            arr = new double[yIterations, xIterations];
 
-            for (int i = 0; i < xIterations; i++)
-                for (int j = 0; j < yIterations; j++)
+            for (int i = 0; i < yIterations; i++)
+            {
+                for (int j = 0; j < xIterations; j++)
+                {
                     arr[i, j] = -1;
+                }
+            }
         }
 
         public override void Run()
@@ -82,19 +86,34 @@ namespace ModelledSystems.Routines
 
         private void GetImage()
         {
-            ColouredMapPlot po = new ColouredMapPlot(arr, Size, new ColorCondition4());
-            po.Xmin = xBegin;
-            po.Xmax = xEnd;
-            po.Ymin = yBegin;
-            po.Ymax = yEnd;
-            po.LabelX = xParameter.Name;
-            po.LabelY = yParameter.Name;
-            po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_map.png"), ImageFormat.Png);
+            var plt = new ScottPlot.Plot(Size.Width, Size.Height);
+            
+            plt.XAxis.Label(xParameter.Name);
+            plt.YAxis.Label(yParameter.Name);
+
+            var hm = plt.AddHeatmap(arr, lockScales: false);
+            var cb = plt.AddColorbar(hm);
+            hm.Smooth = true;
+            plt.Margins(0, 0);
+
+            double maxPositiveLeIndex = Ext.Max(arr);
+
+            double[] ticks = ArrayUtil.GenerateArray((int)maxPositiveLeIndex + 1, 0, 1);
+
+            cb.SetTicks(
+                ticks,
+                ticks.Select(t => t.ToString()).ToArray(), 
+                min: 0, 
+                max: maxPositiveLeIndex);
+
+            plt.XTicks(new double[] { 0, xIterations }, new string[] { xBegin.ToString(), xEnd.ToString() });
+            plt.YTicks(new double[] { 0, yIterations }, new string[] { yBegin.ToString(), yEnd.ToString() });
+
+            plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_map.png"));
         }
 
         public void Func(double xparam, double yParam, int x, int y)
         {
-            int rez = 0;
             long totIter;
             double[] R, vars;
 
@@ -118,11 +137,9 @@ namespace ModelledSystems.Routines
                 totIter--;
             }
 
-            for (int k = 0; k < equations.EquationsCount; k++)
-                if (lyap.Result.Spectrum[k] > 0)
-                    rez++;
+            int rez = lyap.Result.Spectrum.Count(l => l > 0);
 
-            arr[x, y] = rez;
+            arr[yIterations - 1 - y, x] = rez;
         }
     }
 

@@ -1,9 +1,7 @@
 ﻿using ChaosSoft.Core.Data;
-using ChaosSoft.Core.DrawEngine.Charts;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -44,11 +42,17 @@ namespace ModelledSystems.Routines
 
             //DataWriter.CreateDataFile("fileName", SyncMapSeries.ToString());
 
-            Size size = new Size(320, 240);
-            var po = new ScatterPlot(size, SyncMapSeries);
-            po.LabelX = "p";
-            po.LabelY = "Δ";
-            po.Plot().Save(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_stefanski.png"), ImageFormat.Png);
+
+            var plt = new ScottPlot.Plot(Size.Width, Size.Height);
+            plt.XAxis.Label("p");
+            plt.YAxis.Label("Δ");
+
+            foreach (DataPoint dp in SyncMapSeries.DataPoints)
+            {
+                plt.AddPoint(dp.X, dp.Y, Color.Blue, 1);
+            }
+
+            plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_stefanski.png"));
 
             int k = SyncMapSeries.Length - 1;
             double rezY = SyncMapSeries.DataPoints[k].Y;
