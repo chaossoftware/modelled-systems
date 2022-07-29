@@ -98,7 +98,7 @@ namespace ModelledSystems.Routines
 
             double maxPositiveLeIndex = Ext.Max(arr);
 
-            double[] ticks = ArrayUtil.GenerateArray((int)maxPositiveLeIndex + 1, 0, 1);
+            double[] ticks = ArrayUtil.GenerateArray((int)maxPositiveLeIndex + 1, 0d, 1d);
 
             cb.SetTicks(
                 ticks,
