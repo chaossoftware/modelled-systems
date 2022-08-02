@@ -142,24 +142,4 @@ namespace ModelledSystems.Routines
             arr[yIterations - 1 - y, x] = rez;
         }
     }
-
-    class ColorCondition4 : ChaosSoft.Core.DrawEngine.Charts.ColorMaps.IColorMap
-    {
-        public Color GetColor(double value)
-        {
-            switch ((int)value)
-            {
-                case 3:
-                    return Color.Black;
-                case 2:
-                    return Color.DarkGreen;
-                case 1:
-                    return Color.Green;
-                case 0:
-                    return Color.Blue;
-                default:
-                    return Color.White;
-            }
-        }
-    }
 }
