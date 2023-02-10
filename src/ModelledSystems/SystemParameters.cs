@@ -1,35 +1,35 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace ModelledSystems
+namespace ModelledSystems;
+
+public class Parameter
 {
-    public struct Parameter
+    public double Start { get; set; }
+
+    public double End { get; set; }
+
+    public double Default { get; set; }
+
+    public string Name { get; set; }
+}
+
+public class SystemParameters
+{
+    public SystemParameters()
     {
-        public double Start { get; set; }
-
-        public double Step { get; set; }
-
-        public double End { get; set; }
-
-        public double Default { get; set; }
-
-        public string Name { get; set; }
+        ListParameters = new List<Parameter>();
     }
 
-    public class SystemParameters
-    {
-        public SystemParameters()
-        {
-            ListParameters = new List<Parameter>();
-        }
+    public double ModellingTime { get; set; }
 
-        public double ModellingTime { get; set; }
+    public string Solver { get; set; }
 
-        public string SystemName { get; set; }
+    public string SystemName { get; set; }
 
-        public Parameter Step { get; set; }
-        public List<Parameter> ListParameters { get; set; }
+    public double Step { get; set; }
 
-        public double[] Defaults => ListParameters.Select(p => p.Default).ToArray();
-    }
+    public List<Parameter> ListParameters { get; set; }
+
+    public double[] Defaults => ListParameters.Select(p => p.Default).ToArray();
 }

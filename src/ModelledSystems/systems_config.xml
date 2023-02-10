@@ -1,85 +1,151 @@
 <config>
 
   <ModelingTask>
-
     <TargetSystem>logistic</TargetSystem>
-    <Action name="signal"></Action>
-    <!-- bifurcation , signal , benettin_les , benettin_lle , benettin_lle_param , le_map , stefanski -->
-    <!--Action name="stefanski">5000|0.0001</Action-->
-
+    <Action>benettin_lle</Action>
     <Orthogonalization type="mgs" interval="1"/>
     <!-- cgs , mgs , hh -->
-    <Output outDir="Output" picHeight="400" picWidth="640"></Output>
 
+    <Output outDir="Output" picHeight="400" picWidth="640" binaryOutput="false"/>
   </ModelingTask>
+
+  <Routines>
+    <Routine name="signal" params=""/>
+    <Routine name="bifurcation" params="0|1000"/>
+    <Routine name="benettin_lle" params=""/>
+    <Routine name="benettin_les" params=""/>
+    <Routine name="benettin_lle_param" paramIndex="0" params="0|300"/>
+    <Routine name="synchronization_lle" iterations="5000" convergeRatio="0.0001" params="5000|0.0001"/>
+    <Routine name="le_map" param1Index="0" param2Index="1" params="0|1|300"/>
+    <Routine name="lyapunov_fractal" paramIndex="0" sequence="AB" params="0|300|AB"/>
+  </Routines>
 
   <Systems>
 
     <!-- MAPS -->
 
     <System name="logistic">
-      <ModellingTime>10000</ModellingTime>
+      <Solver name="discrete" time="25000" dt="1"/>
       <Parameters>
-        <Step start="0.5" step="0.5" end="2" default="1"/>
-        <Param name="r" start="1" step="0.001" end="4" default="4"/>
+        <Param name="r" value="4" range="1..4"/>
       </Parameters>
     </System>
 
     <System name="henon">
-      <ModellingTime>10000</ModellingTime>
+      <Solver name="discrete" time="25000" dt="1"/>
       <Parameters>
-        <Step start="0.5" step="1" end="1.5" default="1"/>
-        <Param name="a" start="-0.122" step="0.001" end="1.426" default="1.4"/>
-        <Param name="b" start="-0.39" step="0.001" end="0.314" default="0.3"/>
+        <Param name="a" value="1.4" range="-1..2.5"/>
+        <Param name="b" value="0.3" range="-1.5..1.5"/>
       </Parameters>
     </System>
 
     <System name="tinkerbell">
-      <ModellingTime>10000</ModellingTime>
+      <Solver name="discrete" time="25000" dt="1"/>
       <Parameters>
-        <Step start="0.5" step="0.5" end="2" default="1"/>
-        <Param name="a" start="-1.8" step="0.001" end="0.905" default="0.9"/>
-        <Param name="b" start="-0.6" step="0.001" end="0.27" default="-0.6"/>
-        <Param name="c" start="-0.201" step="0.001" end="2.009" default="2.0"/>
-        <Param name="d" start="-1.631" step="0.001" end="0.503" default="0.5"/>
+        <Param name="a" value="0.9" range="-1.8..0.905"/>
+        <Param name="b" value="-0.6" range="-0.6..0.27"/>
+        <Param name="c" value="2.0" range="-0.201..2.009"/>
+        <Param name="d" value="0.5" range="-1.631..0.503"/>
       </Parameters>
     </System>
 
     <System name="henon_generalized">
-      <ModellingTime>10000</ModellingTime>
+      <Solver name="discrete" time="25000" dt="1"/>
       <Parameters>
-        <Step start="0.5" step="1" end="1.5" default="1"/>
-        <Param name="a" start="-0.264" step="0.001" end="1.931" default="1.9"/>
-        <Param name="b" start="-0.027" step="0.0001" end="0.0434" default="0.03"/>
+        <Param name="a" value="1.9" range="-0.5..2"/>
+        <Param name="b" value="0.03" range="-1.5..1.5"/>
       </Parameters>
     </System>
-    
-    
+
+
     <!-- FLOWS -->
-    
+
     <System name="lorenz">
-      <ModellingTime>100</ModellingTime>
+      <Solver name="rk4" time="250" dt="0.01"/>
       <Parameters>
-        <Step start="0.005" step="0.005" end="0.02" default="0.01"/>
-        <Param name="ϛ" start="4" step="0.1" end="56.1" default="10.0"/>
-        <Param name="r" start="14" step="0.5" end="250" default="28.0"/>
-        <Param name="b" start="0" step="0.01" end="5" default="2.666666666666666667"/>
+        <Param name="ϛ" value="10.0" range="4..56.1"/>
+        <Param name="ρ" value="28.0" range="14..250"/>
+        <Param name="β" value="8/3" range="0..5"/>
       </Parameters>
     </System>
 
     <System name="rossler">
-      <ModellingTime>1000</ModellingTime>
+      <Solver name="rk4" time="2500" dt="0.1"/>
       <Parameters>
-        <Step start="0.001" step="0.001" end="1" default="0.1"/>
-        <Param name="a" start="0" step="0.001" end="0.41" default="0.2"/>
-        <Param name="b" start="0.01" step="0.01" end="10" default="0.2"/>
-        <Param name="c" start="0.39" step="0.01" end="14.17" default="5.7"/>
+        <Param name="a" value="0.2" range="0..0.5"/>
+        <Param name="b" value="0.2" range="0..5"/>
+        <Param name="c" value="5.7" range="0..16"/>
       </Parameters>
     </System>
 
-    <System name="ikeda">
-      <ModellingTime>100000</ModellingTime>
-      <StepSize>1</StepSize>
+    <System name="thomas">
+      <Solver name="rk4" time="250" dt="0.01"/>
+      <Parameters>
+        <Param name="b" value="0.19" range="0..1"/>
+      </Parameters>
+    </System>
+
+    <System name="halvorsen">
+      <Solver name="rk4" time="250" dt="0.01"/>
+      <Parameters>
+        <Param name="a" value="1.4" range="0..4"/>
+      </Parameters>
+    </System>
+
+    <System name="qi_chen">
+      <Solver name="rk4" time="250" dt="0.01"/>
+      <Parameters>
+        <Param name="α" value="38" range="10..56"/>
+        <Param name="β" value="8/3" range="0..5"/>
+        <Param name="ς" value="80" range="40..250"/>
+      </Parameters>
+    </System>
+
+    <System name="chua">
+      <Solver name="rk4" time="250" dt="0.01"/>
+      <Parameters>
+        <Param name="α" value="15.6" range="4..40"/>
+        <Param name="β" value="1" range="0..5"/>
+        <Param name="ς" value="28" range="10..56"/>
+        <Param name="δ" value="-1.143" range="-3..3"/>
+        <Param name="ε" value="-0.714" range="-3..3"/>
+      </Parameters>
+    </System>
+
+    <System name="stankevich">
+      <Solver name="rk4" time="250" dt="0.01"/>
+      <Parameters>
+        <Param name="α" value="9" range="NaN..NaN"/>
+        <Param name="β" value="0.016" range="NaN..NaN"/>
+        <Param name="μ" value="4" range="NaN..NaN"/>
+        <Param name="ǫ" value="0.02" range="NaN..NaN"/>
+        <Param name="ω₀" value="2*pi" range="NaN..NaN"/>
+      </Parameters>
+    </System>
+
+    <System name="charo">
+      <Solver name="rk4" time="250" dt="0.01"/>
+      <Parameters>
+        <Param name="A" value="0.1" range="NaN..NaN"/>
+        <Param name="η" value="0.1" range="NaN..NaN"/>
+        <Param name="ω" value="pi/5" range="NaN..NaN"/>
+      </Parameters>
+    </System>
+
+    <System name="henon_helies">
+      <Solver name="rk4" time="250" dt="0.01"/>
+      <Parameters/>
+    </System>
+
+    <System name="anischenko_nikolaev">
+      <Solver name="rk4" time="250" dt="0.01"/>
+      <Parameters>
+        <Param name="α" value="0.2" range="NaN..NaN"/>
+        <Param name="β" value="0.43" range="NaN..NaN"/>
+        <Param name="δ" value="0.001" range="NaN..NaN"/>
+        <Param name="μ" value="0.0809" range="NaN..NaN"/>
+        <Param name="θ" value="pi/3" range="NaN..NaN"/>
+      </Parameters>
     </System>
 
   </Systems>

@@ -1,85 +1,86 @@
 ﻿using ChaosSoft.Core.Data;
 using ChaosSoft.Core.IO;
-using ChaosSoft.Core.NumericalMethods.Solvers;
+using ChaosSoft.Core.NumericalMethods.Equations;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace ModelledSystems.Routines
+namespace ModelledSystems.Routines;
+
+internal class Bifurcation : Routine
 {
-    class Bifurcation : Routine
+    private readonly TaskProgress _progress;
+    private readonly ConcurrentBag<DataPoint> _dataPoints;
+    private readonly int _totalIterations;
+    private readonly DataSeries _solutionSeries;
+    private readonly int _paramIndex;
+    private readonly int _lastIter = 100;
+    private readonly Parameter _param;
+    private readonly double _step;
+
+    public Bifurcation(string outDir, SystemParameters systemParameters, int paramIndex, int iterations) : base(outDir, systemParameters)
     {
+        _solutionSeries = new DataSeries();
+        _paramIndex = paramIndex;
+        _param = SysParameters.ListParameters[_paramIndex];
+        _totalIterations = iterations;
+        _step = (_param.End - _param.Start) / _totalIterations;
+        _dataPoints = new ConcurrentBag<DataPoint>();
+        _progress = new TaskProgress(_totalIterations);
+    }
 
-        static Timeseries SyncMapSeries;
-        int step, currentIteration;
-        int ParamIndex;
-        static int TotalIterations;
-        int LastIter = 100;
-        ConcurrentBag<DataPoint> ds;
-        Parameter Param;
-
-        public Bifurcation(string outDir, SystemParameters systemParameters, int paramIndex) : base(outDir, systemParameters)
+    public override void Run()
+    {
+        Parallel.For(0, _totalIterations, i =>
         {
-            SyncMapSeries = new Timeseries();
-            currentIteration = 1;
-            ParamIndex = paramIndex;
-            Param = SysParameters.ListParameters[ParamIndex];
-            TotalIterations = (int)((Param.End - Param.Start) / Param.Step);
-            step = TotalIterations / Console.BufferWidth;
-            ds = new ConcurrentBag<DataPoint>();
+            Func(_param.Start + _step * i);
+        });
+
+        _solutionSeries.DataPoints.AddRange(_dataPoints);
+
+        DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_dataBifur_" + _param.Name), _solutionSeries.ToString());
+
+        var plt = new ScottPlot.Plot(Size.Width, Size.Height);
+        plt.XAxis.Label(_param.Name);
+        plt.YAxis.Label("X");
+
+        foreach (DataPoint dp in _solutionSeries.DataPoints)
+        {
+            plt.AddPoint(dp.X, dp.Y, Color.Blue, 1);
         }
 
-        public override void Run()
+        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_bifur_" + _param.Name + ".png"));
+    }
+
+
+    private void Func(double p)
+    {
+        double[] vars;
+
+        vars = SysParameters.Defaults;
+        vars[_paramIndex] = p;
+
+        SystemBase eq = GetSystemEquations(vars);
+
+        var solver = GetSolver(SysParameters.Solver, eq, SysParameters.Step);
+
+        for (int j = 0; j < _totalIterations; j++)
         {
-            Parallel.For(0, TotalIterations, i =>
+            solver.NexStep();
+
+            if (j > _totalIterations - _lastIter)
             {
-                Func(Param.Start + Param.Step * i);
-            });
+                double rez = solver.Solution[0, 0];
 
-            SyncMapSeries.DataPoints.AddRange(ds);
-
-            DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_dataBifur_" + Param.Name), SyncMapSeries.ToString());
-
-            var plt = new ScottPlot.Plot(Size.Width, Size.Height);
-            plt.XAxis.Label(Param.Name);
-            plt.YAxis.Label("X");
-
-            foreach (DataPoint dp in SyncMapSeries.DataPoints)
-            {
-                plt.AddPoint(dp.X, dp.Y, Color.Blue, 1);
-            }
-
-            plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_bifur_" + Param.Name + ".png"));
-        }
-
-
-        private void Func(double p)
-        {
-            double[] vars;
-
-            vars = SysParameters.Defaults;
-            vars[ParamIndex] = p;
-
-            SystemEquations eq = GetSystemEquations(false, vars, SysParameters.Step.Default);
-            eq.Solver.Init();
-
-            for (int j = 0; j < TotalIterations; j++)
-            {
-                eq.Solver.NexStep();
-                if (j > TotalIterations - LastIter)
+                if (!double.IsInfinity(rez) && !double.IsNaN(rez) && Math.Abs(rez) < 1000)
                 {
-                    double rez = eq.Solver.Solution[0, 0];
-                    if (!double.IsInfinity(rez) && !double.IsNaN(rez) && Math.Abs(rez) < 1000)
-                        ds.Add(new DataPoint(p, rez));
+                    _dataPoints.Add(new DataPoint(p, rez));
                 }
             }
-
-            if (currentIteration++ % step == 0)
-            {
-                Console.Write("#");
-            }
         }
+
+        _progress.Iterate();
     }
 }

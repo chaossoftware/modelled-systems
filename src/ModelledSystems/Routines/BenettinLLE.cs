@@ -1,105 +1,54 @@
-﻿using ChaosSoft.Core;
-using ChaosSoft.Core.NumericalMethods.Solvers;
+﻿using ChaosSoft.Core.NumericalMethods.Equations;
+using ChaosSoft.Core.NumericalMethods.Lyapunov;
 using System;
 using System.IO;
-using System.Text;
 
-namespace ModelledSystems.Routines
+namespace ModelledSystems.Routines;
+
+class BenettinLLE : Routine
 {
-    class BenettinLLE : Routine
+    private readonly double _eqStep;
+    private string fileNameStart;
+    private readonly SystemBase _equations;
+    private readonly Type _solverType;
+
+    //double[] outArray;
+
+    private long TotIter;
+
+    public BenettinLLE(string outDir, SystemParameters systemParameters) : base (outDir, systemParameters)
     {
-        //double[] outArray;
+        _equations = GetSystemEquations(SysParameters.Defaults);
+        _solverType = GetSolverType(SysParameters.Solver);
+        _eqStep = SysParameters.Step;
+        TotIter = (long)(SysParameters.ModellingTime / _eqStep);
+        fileNameStart = Path.Combine(OutDir, _equations.Name);
+        //outArray = new double[TotIter];
+    }
 
-        double l1;
+    public override void Run()
+    {
+        LleBenettin benettin = new LleBenettin(_equations, _solverType, _eqStep, TotIter);
+        benettin.Calculate();
+        //WriteResults();
+        Console.WriteLine(benettin.ToString());
+        Console.WriteLine("\nResult:\n" + benettin.GetResultAsString());
+    }
 
-        long TotIter;
-        int EqN;
-        double EqStep;
-
-        SystemEquations eq, eq1;
-
-        double lsum;
-        long nl;
-
-        public BenettinLLE(string outDir, SystemParameters systemParameters) : base (outDir, systemParameters)
+    private void WriteResults()
+    {
+        //Console.WriteLine("{0:F5}", l1);
+        //DataWriter.CreateDataFile(equations.SystemName + "_inTime.le", output.ToString());
+        //StringBuilder output = new StringBuilder();
+        
+        /*
+        double t = 0;
+        for (int cnt = 0; cnt < TotIter; cnt++)
         {
-            EqStep = SysParameters.Step.Default;
-
-            eq = GetSystemEquations(false, SysParameters.Defaults, EqStep);
-            eq1 = GetSystemEquations(false, SysParameters.Defaults, EqStep);
-
-            EqN = eq.EquationsCount;
-
-            TotIter = (long)(SysParameters.ModellingTime / EqStep);
-            //outArray = new double[TotIter];
-            eq.Solver.Init();
+            output.AppendFormat("{0:F5}\t{0:F15}\n", t, outArray[cnt]);
+            t += EqStep;
         }
-
-        public override void Run()
-        {
-            for (int i = 0; i < TotIter; i++)
-            {
-                MakeIteration();
-                //outArray[i] = l1;
-            }
-                
-
-            WriteResults();
-        }
-
-
-        private void MakeIteration()
-        {
-            eq.Solver.NexStep();
-
-            if (eq1.Solver.Solution[0, 0] == 0)
-            {
-                eq1.Solver.Solution[0, 0] += eq.Solver.Solution[0, 0] + 1e-8;
-                for (int _i = 1; _i < eq.EquationsCount; _i++)
-                    eq1.Solver.Solution[0, _i] = eq.Solver.Solution[0, _i];
-                lsum = 0;
-                nl = 0;
-                return;
-            }
-
-            eq1.Solver.NexStep();
-
-            double dl2 = 0;
-            for (int _i = 0; _i < eq.EquationsCount; _i++)
-                dl2 += FastMath.Pow2(eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i]);
-
-            if (dl2 > 0)
-            {
-                double df = 1e16 * dl2;
-                double rs = 1 / Math.Sqrt(df);
-
-                for (int _i = 0; _i < eq.EquationsCount; _i++)
-                    eq1.Solver.Solution[0, _i] = eq.Solver.Solution[0, _i] + rs * (eq1.Solver.Solution[0, _i] - eq.Solver.Solution[0, _i]);
-                lsum += Math.Log(df);
-                nl++;
-            }
-
-            l1 = 0.5 * lsum / nl / Math.Abs(eq.Solver.Step);
-        }
-
-
-        private void WriteResults()
-        {
-            string fileNameStart = Path.Combine(OutDir, eq.Name);
-
-            Console.WriteLine("{0:F5}", l1);
-            //DataWriter.CreateDataFile(equations.SystemName + "_inTime.le", output.ToString());
-            StringBuilder output = new StringBuilder();
-            
-            /*
-            double t = 0;
-            for (int cnt = 0; cnt < TotIter; cnt++)
-            {
-                output.AppendFormat("{0:F5}\t{0:F15}\n", t, outArray[cnt]);
-                t += EqStep;
-            }
-            DataWriter.CreateDataFile(eq.SystemName + "_inTime.le", output.ToString());
-            */
-        }
+        DataWriter.CreateDataFile(eq.SystemName + "_inTime.le", output.ToString());
+        */
     }
 }

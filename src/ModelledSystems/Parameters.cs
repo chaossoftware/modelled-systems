@@ -3,12 +3,14 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Globalization;
 using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace ModelledSystems
 {
     internal class Parameters
     {
         private const string ConfigFile = "systems_config.xml";
+        private readonly string[] _operations = new string[] { "/", "*" };
 
         public Parameters()
         {
@@ -16,13 +18,19 @@ namespace ModelledSystems
             {
                 var config = XDocument.Load(ConfigFile);
                 var modelingTaskEl = config.Root.Element("ModelingTask");
+                var routinesEl = config.Root.Element("Routines");
                 var orthogonalizationEl = modelingTaskEl.Element("Orthogonalization");
 
                 System = modelingTaskEl.Element("TargetSystem").Value;
-                Action = modelingTaskEl.Element("Action").Attribute("name").Value;
-                ActionParams = modelingTaskEl.Element("Action").Value;
+                Action = modelingTaskEl.Element("Action").Value;
+                
+                ActionParams = routinesEl.Descendants("Routine")
+                    .First(e => e.Attribute("name").Value.Equals(Action, StringComparison.InvariantCultureIgnoreCase))
+                    .Attribute("params").Value;
+                
                 Orthogonalization = orthogonalizationEl.Attribute("type").Value;
                 OutDir = modelingTaskEl.Element("Output").Attribute("outDir").Value;
+                BinOutput = Convert.ToBoolean(modelingTaskEl.Element("Output").Attribute("binaryOutput").Value);
                 PicSize = new Size(
                     Convert.ToInt32(modelingTaskEl.Element("Output").Attribute("picWidth").Value), 
                     Convert.ToInt32(modelingTaskEl.Element("Output").Attribute("picHeight").Value));
@@ -34,11 +42,12 @@ namespace ModelledSystems
 
                 Iterations = int.Parse(orthogonalizationEl.Attribute("interval").Value, CultureInfo.InvariantCulture);
 
-                SystemParameters.SystemName = System;
-                SystemParameters.ModellingTime = Convert.ToDouble(systemEl.Element("ModellingTime").Value);
+                var xSolver = systemEl.Element("Solver");
 
-                var stepParam = GetParameterFromXElement(parametersEl.Element("Step"));
-                SystemParameters.Step = stepParam;
+                SystemParameters.SystemName = System;
+                SystemParameters.Solver = xSolver.Attribute("name").Value;
+                SystemParameters.ModellingTime = Convert.ToDouble(xSolver.Attribute("time").Value);
+                SystemParameters.Step = Convert.ToDouble(xSolver.Attribute("dt").Value);
 
                 foreach (var paramEl in parametersEl.Descendants("Param"))
                 {
@@ -72,16 +81,59 @@ namespace ModelledSystems
 
         public string OutDir { get; private set; } = string.Empty;
 
+        public bool BinOutput { get; private set; } = false;
+
         public Size PicSize { get; private set; }
 
         private Parameter GetParameterFromXElement(XElement el)
         {
             var parameter = new Parameter();
-            parameter.Start = Convert.ToDouble(el.Attribute("start").Value);
-            parameter.Step = Convert.ToDouble(el.Attribute("step").Value);
-            parameter.End = Convert.ToDouble(el.Attribute("end").Value);
-            parameter.Default = Convert.ToDouble(el.Attribute("default").Value);
+
+            string[] pair = Regex.Split(el.Attribute("range").Value, "\\.\\.");
+
+            parameter.Start = Convert.ToDouble(pair[0].Trim());
+            parameter.End = Convert.ToDouble(pair[1].Trim());
+            parameter.Default = ParseParameterValue(el.Attribute("value").Value);
             return parameter;
+        }
+
+        private double ParseParameterValue(string value)
+        {
+            string operation = _operations.FirstOrDefault(o => value.Contains(o));
+
+            if (operation == null)
+            {
+                return Convert.ToDouble(value);
+            }
+
+            string[] pair = value.Split(operation[0]);
+
+            double val1 = ParseValue(pair[0]);
+            double val2 = ParseValue(pair[1]);
+
+            return GetOperationResult(val1, val2, operation);
+        }
+
+        private double ParseValue(string value)
+        {
+            value = value.Trim();
+
+            return value.Equals("pi", StringComparison.InvariantCultureIgnoreCase) ? 
+                Math.PI : 
+                Convert.ToDouble(value);
+        }
+
+        private double GetOperationResult(double val1, double val2, string operation)
+        {
+            switch(operation)
+            {
+                case "*":
+                    return val1 * val2;
+                case "/":
+                    return val1 / val2;
+                default:
+                    throw new NotImplementedException($"operation {operation} is not recognized");
+            }
         }
     }
 }
