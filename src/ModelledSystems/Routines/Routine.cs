@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using ChaosSoft.Core.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Equations;
 using ModelledSystems.Equations;
 using ModelledSystems.Equations.Linearized;
 

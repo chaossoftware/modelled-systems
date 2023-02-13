@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ChaosSoft.Core.Extensions;
-using ChaosSoft.Core.NumericalMethods.Equations;
-using ChaosSoft.Core.NumericalMethods.Lyapunov;
-using ChaosSoft.Core.NumericalMethods.Orthogonalization;
+using ChaosSoft.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Lyapunov;
+using ChaosSoft.NumericalMethods.Orthogonalization;
 
 namespace ModelledSystems.Routines;
 
@@ -47,7 +47,7 @@ internal class LesMap : Routine
         _progress = new TaskProgress(totalIterations);
 
         _arr = new double[_iterations, _iterations];
-        Matrixes.FillWith(_arr, -1);
+        Matrix.FillWith(_arr, -1);
 
         _arrPvc = new double[_iterations, _iterations];
     }
@@ -65,8 +65,8 @@ internal class LesMap : Routine
         plt.XAxis.Label(xParameter.Name);
         plt.YAxis.Label(yParameter.Name);
 
-        int maxPositiveLeIndex = (int)Matrixes.Max(_arr);
-        int minLeIndex = (int)Matrixes.Min(_arr);
+        int maxPositiveLeIndex = (int)Matrix.Max(_arr);
+        int minLeIndex = (int)Matrix.Min(_arr);
         MakeGradient(maxPositiveLeIndex);
 
         var hm = plt.AddHeatmap(_arr, ScottPlot.Drawing.Colormap.Jet, lockScales: false);
@@ -75,7 +75,7 @@ internal class LesMap : Routine
         plt.Margins(0, 0);
 
 
-        double[] ticks = Arrays.GenerateUniformArray(maxPositiveLeIndex + 1, minLeIndex, 1d);
+        double[] ticks = Vector.CreateUniform(maxPositiveLeIndex + 1, minLeIndex, 1d);
 
         cb.SetTicks(
             ticks,
@@ -137,8 +137,8 @@ internal class LesMap : Routine
         double[] maxs = new double[arrLength];
         double[] coeffs = new double[arrLength];
 
-        Arrays.FillArrayWith(mins, double.MaxValue);
-        Arrays.FillArrayWith(maxs, double.MinValue);
+        Vector.FillWith(mins, double.MaxValue);
+        Vector.FillWith(maxs, double.MinValue);
 
         for (int x = 0; x < _iterations; x++)
         {

@@ -1,6 +1,6 @@
 ﻿using ChaosSoft.Core.IO;
-using ChaosSoft.Core.NumericalMethods.Lyapunov;
-using ChaosSoft.Core.NumericalMethods.Orthogonalization;
+using ChaosSoft.NumericalMethods.Lyapunov;
+using ChaosSoft.NumericalMethods.Orthogonalization;
 using System;
 using System.IO;
 using System.Linq;
@@ -21,8 +21,8 @@ class BenettinSpectrum : Routine
 
     static OrthogonalizationBase ort;
     static BenettinMethod lyap;
-    static ChaosSoft.Core.NumericalMethods.Equations.SystemBase Equations;
-    static ChaosSoft.Core.NumericalMethods.Equations.SolverBase solver;
+    static ChaosSoft.NumericalMethods.Equations.SystemBase Equations;
+    static ChaosSoft.NumericalMethods.Equations.SolverBase solver;
     
     string Orthogonalization;
     int Irate;

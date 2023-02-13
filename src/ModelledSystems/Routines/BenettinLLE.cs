@@ -1,5 +1,5 @@
-﻿using ChaosSoft.Core.NumericalMethods.Equations;
-using ChaosSoft.Core.NumericalMethods.Lyapunov;
+﻿using ChaosSoft.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Lyapunov;
 using System;
 using System.IO;
 
