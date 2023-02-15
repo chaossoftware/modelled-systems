@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
-using ChaosSoft.Core.Extensions;
+using ChaosSoft.Core.DataUtils;
 using ChaosSoft.NumericalMethods.Equations;
 using ChaosSoft.NumericalMethods.Lyapunov;
 

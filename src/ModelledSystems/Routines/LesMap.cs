@@ -3,7 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using ChaosSoft.Core.Extensions;
+using ChaosSoft.Core.DataUtils;
 using ChaosSoft.NumericalMethods.Equations;
 using ChaosSoft.NumericalMethods.Lyapunov;
 using ChaosSoft.NumericalMethods.Orthogonalization;
@@ -109,7 +109,7 @@ internal class LesMap : Routine
 
         totIter = (long)(SysParameters.ModellingTime / solver.Dt);
         OrthogonalizationBase ort = new ModifiedGrammSchmidt(equations.Count);
-        BenettinMethod lyap = new BenettinMethod(equations.Count);
+        LeSpecBenettin lyap = new LeSpecBenettin(equations.Count);
 
         R = new double[equations.Count];
 
