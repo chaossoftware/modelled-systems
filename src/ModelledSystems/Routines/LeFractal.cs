@@ -2,9 +2,9 @@
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
-using ChaosSoft.Core.Extensions;
-using ChaosSoft.Core.NumericalMethods.Equations;
-using ChaosSoft.Core.NumericalMethods.Lyapunov;
+using ChaosSoft.Core.DataUtils;
+using ChaosSoft.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Lyapunov;
 
 namespace ModelledSystems.Routines;
 
@@ -31,7 +31,7 @@ internal class LeFractal : Routine
         _progress = new TaskProgress(_iterations * _iterations);
 
         _arr = new double[_iterations, _iterations];
-        Matrixes.FillWith(_arr, -1);
+        Matrix.FillWith(_arr, -1);
     }
 
     public override void Run()

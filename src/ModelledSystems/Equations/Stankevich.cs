@@ -1,4 +1,4 @@
-﻿using ChaosSoft.Core.NumericalMethods.Equations;
+﻿using ChaosSoft.NumericalMethods.Equations;
 using System;
 
 namespace ModelledSystems.Equations;

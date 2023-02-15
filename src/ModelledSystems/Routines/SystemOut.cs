@@ -1,6 +1,5 @@
 ﻿using ChaosSoft.Core.IO;
-using ChaosSoft.Core.NumericalMethods.Equations;
-using ChaosSoft.Core.Transform;
+using ChaosSoft.NumericalMethods.Equations;
 using System.IO;
 using System.Text;
 

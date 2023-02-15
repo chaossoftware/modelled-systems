@@ -1,6 +1,6 @@
 ﻿using ChaosSoft.Core.Data;
 using ChaosSoft.Core.IO;
-using ChaosSoft.Core.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Equations;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;

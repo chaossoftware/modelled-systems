@@ -1,7 +1,7 @@
 ﻿using ChaosSoft.Core.Data;
 using ChaosSoft.Core.IO;
-using ChaosSoft.Core.NumericalMethods.Equations;
-using ChaosSoft.Core.NumericalMethods.Lyapunov;
+using ChaosSoft.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Lyapunov;
 using System;
 using System.Collections.Concurrent;
 using System.IO;

@@ -1,6 +1,6 @@
 ﻿using ChaosSoft.Core.IO;
-using ChaosSoft.Core.NumericalMethods.Lyapunov;
-using ChaosSoft.Core.NumericalMethods.Orthogonalization;
+using ChaosSoft.NumericalMethods.Lyapunov;
+using ChaosSoft.NumericalMethods.Orthogonalization;
 using System;
 using System.IO;
 using System.Linq;
@@ -20,9 +20,9 @@ class BenettinSpectrum : Routine
     //double[,] outArray;
 
     static OrthogonalizationBase ort;
-    static BenettinMethod lyap;
-    static ChaosSoft.Core.NumericalMethods.Equations.SystemBase Equations;
-    static ChaosSoft.Core.NumericalMethods.Equations.SolverBase solver;
+    static LeSpecBenettin lyap;
+    static ChaosSoft.NumericalMethods.Equations.SystemBase Equations;
+    static ChaosSoft.NumericalMethods.Equations.SolverBase solver;
     
     string Orthogonalization;
     int Irate;
@@ -42,7 +42,7 @@ class BenettinSpectrum : Routine
 
         ort = GetOrthogonalization(Orthogonalization);
         TotIter = (long)(SysParameters.ModellingTime / EqStep);
-        lyap = new BenettinMethod(EqN);
+        lyap = new LeSpecBenettin(EqN);
         R = new double[EqN];
         //outArray = new double[TotIter, EqN];
     }
@@ -70,7 +70,7 @@ class BenettinSpectrum : Routine
 
     private void WriteResults()
     {
-        Console.WriteLine(string.Join(",", lyap.Result.Select(l => NumFormatter.ToShort(l))));
+        Console.WriteLine(Format.General(lyap.Result, ",", 6));
         string fileNameStart = Path.Combine(OutDir, Equations.ToFileName());
 
         DataWriter.CreateDataFile(fileNameStart + ".le", lyap.Result.ToString());
