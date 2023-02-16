@@ -1,11 +1,13 @@
 ﻿using ChaosSoft.NumericalMethods.Equations;
 using System;
+using System.Numerics;
 
 namespace ModelledSystems.Equations;
 
 /// <summary>
-/// Equations system for 
-/// <see href="</see>.
+/// Stankevich, N. V., Shchegoleva, N. A., Sataev, I. R. & Kuznetsov, A. P. [2020] “Three-dimensional torus 
+/// breakdown and chaos with two zero Lyapunov exponents in coupled radio-physical generators,
+/// ” Journal of Computational and Nonlinear Dynamics 15, 111001.
 /// </summary>
 public class Stankevich : SystemBase
 {
@@ -13,17 +15,24 @@ public class Stankevich : SystemBase
 
     private double x, y, z, xPow2;
 
-    // <summary>
-    /// For α = 1.5, β = 0.04, μ = 4, ǫ = 0.02, ω₀ = 2π.
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Stankevich"/> class 
+    /// with default system parameters values:<br/>
+    /// α = 1.5, β = 0.04, μ = 4, ǫ = 0.02, ω₀ = 2π.
     /// </summary>
     public Stankevich() : this(1.5, 0.04, 4, 0.02, 2 * Math.PI)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="Stankevich"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: a, b, c)</param>
+    /// <param name="alpha"></param>
+    /// <param name="beta"></param>
+    /// <param name="mu"></param>
+    /// <param name="koppa"></param>
+    /// <param name="om0"></param>
     public Stankevich(double alpha, double beta, double mu, double koppa, double om0) : base(EqCount)
     {
         A = alpha;
@@ -56,7 +65,7 @@ public class Stankevich : SystemBase
 
     /// <summary>
     /// dx/dt = y<br/>
-    /// dy/dt = (α + z + x² − βx^4)y − ω₀² x<br/>
+    /// dy/dt = (α + z + x² − βx⁴)y − ω₀² x<br/>
     /// dz/dt = μ − z − ǫy²
     /// </summary>
     /// <param name="current">current solution</param>
@@ -75,7 +84,7 @@ public class Stankevich : SystemBase
     }
 
     /// <summary>
-    /// Set all to 0.01.
+    /// [0.01, 0.01, 0.01].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -87,10 +96,12 @@ public class Stankevich : SystemBase
     }
 
     public override string ToString() => 
-        string.Format(GetInfoTemplate("α", "β", "μ", "ǫ", "ω0"),
-        A, B, Mu, O, Om0);
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "α", "β", "μ", "ǫ", "ω0"),
+            A, B, Mu, O, Om0);
 
     public override string ToFileName() => 
-        string.Format(GetFileNameTemplate("a", "b", "m", "o", "w0"),
-        A, B, Mu, O, Om0);
+        string.Format(
+            SysFormat.GetFileTemplate("stankevich", "a", "b", "m", "o", "w0"),
+            A, B, Mu, O, Om0);
 }

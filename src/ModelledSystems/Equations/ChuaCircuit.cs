@@ -14,16 +14,23 @@ public class ChuaCircuit : SystemBase
     private double x, y, z;
 
     /// <summary>
-    /// For α = 15.6, β = 1, ς = 28, δ = -1.143, ε = -0.714.
+    /// Initializes a new instance of the <see cref="ChuaCircuit"/> class 
+    /// with default system parameters values:<br/>
+    /// α = 15.6, β = 1, ς = 28, δ = −1.143, ε = −0.714.
     /// </summary>
     public ChuaCircuit() : this(15.6, 1, 28, -1.143, -0.714)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="ChuaCircuit"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: α, β, ς, δ, ε)</param>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <param name="c"></param>
+    /// <param name="d"></param>
+    /// <param name="e"></param>
     public ChuaCircuit(double a, double b, double c, double d, double e) : base(EqCount)
     {
         A = a;
@@ -43,7 +50,7 @@ public class ChuaCircuit : SystemBase
 
     public double E { get; private set; }
 
-    public override string Name => "Chua circuit";
+    public override string Name => "Chua's circuit";
 
     public override void SetParameters(params double[] parameters)
     {
@@ -55,10 +62,10 @@ public class ChuaCircuit : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = α(y — x — G(x))<br/>
-    /// dy/dt = β(x — y + z)<br/>
-    /// dz/dt = —ςy<br/>
-    /// G(x) = εx + (δ — ε)(|x + 1| — |x — 1|)/2
+    /// dx/dt = α(y − x − G(x))<br/>
+    /// dy/dt = β(x − y + z)<br/>
+    /// dz/dt = −ςy<br/>
+    /// G(x) = εx + (δ − ε)(|x + 1| − |x − 1|)/2
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -74,7 +81,7 @@ public class ChuaCircuit : SystemBase
     }
 
     /// <summary>
-    /// 0.7, 0, 0.
+    /// [0.7, 0, 0]
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -84,10 +91,16 @@ public class ChuaCircuit : SystemBase
         current[0, 2] = 0;
     }
 
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "α", "β", "ς", "δ", "ε"),
+            A, B, C, D, E);
+
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("chua", "a", "b", "c", "d", "e"),
+            A, B, C, D, E);
+
     private double G(double x) =>
         E * x + (D - E) / 2 * (Math.Abs(x + 1) - Math.Abs(x - 1));
-
-    public override string ToString() => $"{Name}: a = {A:F1}; b = {B:F1}; c = {C:F2}; d = {D:F2}; e = {E:F2}";
-
-    public override string ToFileName() => $"{Name}_a={A:F1}_b={B:F1}_c={C:F2}_d={D:F2}_e={E:F2}";
 }

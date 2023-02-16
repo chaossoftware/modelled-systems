@@ -3,6 +3,11 @@ using System;
 
 namespace ModelledSystems.Equations
 {
+    /// <summary>
+    /// Char´o, G. D., Sciamarella, D., Mangiarotti, S., Artana, G. & Letellier, C. [2019] 
+    /// “Equivalence between the unsteady double-gyre system and a 4D autonomous conservative chaotic system,” 
+    /// Chaos 29, 123126, doi:10.1063/1.5120625.
+    /// </summary>
     internal class CharoAttractor : SystemBase
     {
         protected const int EqCount = 4;
@@ -10,16 +15,21 @@ namespace ModelledSystems.Equations
         private double x, y, u, v, aMulPi, yMulPi, expr;
 
         /// <summary>
-        /// For A = 0.1, η = 0.1, ω = pi / 5
+        ///  Initializes a new instance of the <see cref="CharoAttractor"/> class 
+        /// with default system parameters values:<br/>
+        /// A = 0.1, η = 0.1, ω = π/5
         /// </summary>
         public CharoAttractor() : this(0.1, 0.1, Math.PI / 5)
         {
         }
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="CharoAttractor"/> class 
+        /// with specific system parameters values.
         /// </summary>
-        /// <param name="vars">params array (order: a)</param>
+        /// <param name="a"></param>
+        /// <param name="nu"></param>
+        /// <param name="om"></param>
         public CharoAttractor(double a, double nu, double om) : base(EqCount)
         {
             A = a;
@@ -80,11 +90,13 @@ namespace ModelledSystems.Equations
         }
 
         public override string ToString() =>
-            string.Format(GetInfoTemplate("A", "η", "ω"),
-            A, Nu, Om);
+            string.Format(
+                SysFormat.GetInfoTemplate(Name, "A", "η", "ω"),
+                A, Nu, Om);
 
         public override string ToFileName() =>
-            string.Format(GetFileNameTemplate("a", "nu", "om"),
-            A, Nu, Om);
+            string.Format(
+                SysFormat.GetFileTemplate("charo", "a", "nu", "om"),
+                A, Nu, Om);
     }
 }

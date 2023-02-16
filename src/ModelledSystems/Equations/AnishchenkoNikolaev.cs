@@ -1,8 +1,11 @@
 ﻿using ChaosSoft.NumericalMethods.Equations;
-using System;
 
 namespace ModelledSystems.Equations
 {
+    /// <summary>
+    /// Anishchenko, V. S. & Nikolaev, S. M. [2005] “Generator of quasi-periodic oscillations featuring 
+    /// two-dimensional torus doubling bifurcations,” Technical Physics Letters 31, 853–855, doi:10.1134/1.2121837.
+    /// </summary>
     public class AnishchenkoNikolaev : SystemBase
     {
         protected const int EqCount = 4;
@@ -10,23 +13,28 @@ namespace ModelledSystems.Equations
         private double x, y, z, w;
 
         /// <summary>
-        /// α = 0.2, β = 0.43, δ = 0.001, μ = 0.0809, θ = pi/3
+        /// Initializes a new instance of the <see cref="AnishchenkoNikolaev"/> class 
+        /// with default system parameters values:<br/>
+        /// α = 0.2, β = 0.43, δ = 0.001, μ = 0.0809
         /// </summary>
-        public AnishchenkoNikolaev() : this(0.2, 0.43, 0.001, 0.0809, Math.PI / 3)
+        public AnishchenkoNikolaev() : this(0.2, 0.43, 0.001, 0.0809)
         {
         }
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="AnishchenkoNikolaev"/> class 
+        /// with specific system parameters values.
         /// </summary>
-        /// <param name="vars">params array (order: a)</param>
-        public AnishchenkoNikolaev(double a, double b, double d, double mu, double th) : base(EqCount)
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="d"></param>
+        /// <param name="mu"></param>
+        public AnishchenkoNikolaev(double a, double b, double d, double mu) : base(EqCount)
         {
             A = a;
             B = b;
             D = d;
             Mu = mu;
-            Th = th;
         }
 
         public double A { get; private set; }
@@ -37,9 +45,7 @@ namespace ModelledSystems.Equations
 
         public double Mu { get; private set; }
 
-        public double Th { get; private set; }
-
-        public override string Name => "Anishchenko & Nikolaev";
+        public override string Name => "Anishchenko & Nikolaev attractor";
 
         public override void SetParameters(params double[] parameters)
         {
@@ -47,7 +53,6 @@ namespace ModelledSystems.Equations
             B = parameters[1];
             D = parameters[2];
             Mu = parameters[3];
-            Th = parameters[4];
         }
 
         /// <summary>
@@ -79,21 +84,23 @@ namespace ModelledSystems.Equations
         /// <param name="current">current solution</param>
         public override void SetInitialConditions(double[,] current)
         {
-            current[0, 0] = 1;
-            current[0, 1] = 1;
-            current[0, 2] = 1;
-            current[0, 3] = 1;
+            for (int i = 0; i < Count; i++)
+            {
+                current[0, i] = 1;
+            }
         }
 
         public override string ToString() =>
-            string.Format(GetInfoTemplate("α", "β", "δ", "μ", "θ"),
-            A, B, D, Mu, Th);
+            string.Format(
+                SysFormat.GetInfoTemplate(Name, "α", "β", "δ", "μ"),
+                A, B, D, Mu);
 
         public override string ToFileName() =>
-            string.Format(GetFileNameTemplate("a", "b", "d", "mu", "th"),
-            A, B, D, Mu, Th);
+            string.Format(
+                SysFormat.GetFileTemplate("anishchenko-nikolaev", "a", "b", "d", "mu"),
+                A, B, D, Mu);
 
-        private double F(double x) =>
+        private static double F(double x) =>
             x > 0 ? x * x : 0;
     }
 }

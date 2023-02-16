@@ -2,26 +2,34 @@
 
 namespace ModelledSystems.Equations
 {
+    /// <summary>
+    /// H´enon, M. & Heiles, C. [1964] “The applicability of the third integral of motion: some numerical experiments,” 
+    /// The astronomical Journal 69, 73–79.
+    /// </summary>
     public class HenonHeiles : SystemBase
     {
         protected const int EqCount = 4;
 
         private double x, vx, y, vy;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HenonHeiles"/> class.
+        /// </summary>
         public HenonHeiles() : base(EqCount)
         {
         }
 
-        public override string Name => "Henon & Heiles";
+        public override string Name => "Hénon & Heiles system";
 
         public override void SetParameters(params double[] parameters)
         {
         }
 
         /// <summary>
-        /// dx/dt = ϛ(y — x)<br/>
-        /// dy/dt = x(ρ — z) — y<br/>
-        /// dz/dt = xy — βz
+        /// dx/dt = Vx<br/>
+        /// dVx/dt = −x − 2xy<br/>
+        /// dy/dt = Vxy<br/>
+        /// dVy/dt = −y − x² + y²<br/>
         /// </summary>
         /// <param name="current">current solution</param>
         /// <param name="derivs">derivatives</param>
@@ -52,6 +60,6 @@ namespace ModelledSystems.Equations
 
         public override string ToString() => Name;
 
-        public override string ToFileName() => Name;
+        public override string ToFileName() => "henon-helies";
     }
 }

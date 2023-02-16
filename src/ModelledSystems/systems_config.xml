@@ -144,7 +144,6 @@
         <Param name="β" value="0.43" range="NaN..NaN"/>
         <Param name="δ" value="0.001" range="NaN..NaN"/>
         <Param name="μ" value="0.0809" range="NaN..NaN"/>
-        <Param name="θ" value="pi/3" range="NaN..NaN"/>
       </Parameters>
     </System>
 

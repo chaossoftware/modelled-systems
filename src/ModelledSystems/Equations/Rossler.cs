@@ -12,17 +12,22 @@ public class Rossler : SystemBase
 
     private double x, y, z;
 
-    // <summary>
-    /// For a = 0.2, b = 0.2, c = 5.7.
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Rossler"/> class 
+    /// with default system parameters values:<br/>
+    /// a = 0.2, b = 0.2, c = 5.7.
     /// </summary>
     public Rossler() : this(0.2, 0.2, 5.7)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="Rossler"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: a, b, c)</param>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <param name="c"></param>
     public Rossler(double a, double b, double c) : base(EqCount)
     {
         A = a;
@@ -36,7 +41,7 @@ public class Rossler : SystemBase
 
     public double C { get; private set; }
 
-    public override string Name => "Rossler";
+    public override string Name => "Rössler attractor";
 
     public override void SetParameters(params double[] parameters)
     {
@@ -46,9 +51,9 @@ public class Rossler : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = —y — z<br/>
+    /// dx/dt = −y − z<br/>
     /// dy/dt = x + ay<br/>
-    /// dz/dt = b + z(x — c)
+    /// dz/dt = b + z(x − c)
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -64,7 +69,7 @@ public class Rossler : SystemBase
     }
 
     /// <summary>
-    /// Set all to 0.01.
+    /// [0.01, 0.01, 0.01].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -75,7 +80,13 @@ public class Rossler : SystemBase
         }
     }
 
-    public override string ToString() => $"{Name}: a = {A:F3}; b = {B:F2}; c = {C:F2}";
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "a", "b", "c"),
+            A, B, C);
 
-    public override string ToFileName() => $"{Name}_a={A:F3}_b={B:F2}_c={C:F2}";
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("rossler", "a", "b", "c"),
+            A, B, C);
 }

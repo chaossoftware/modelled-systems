@@ -13,16 +13,20 @@ public class GeneralizedHenonMap : SystemBase
     private double x, y, z;
 
     /// <summary>
-    /// For a = 1.9, b = 0.03.
+    /// Initializes a new instance of the <see cref="GeneralizedHenonMap"/> class 
+    /// with default system parameters values:<br/>
+    /// a = 1.9, b = 0.03.
     /// </summary>
     public GeneralizedHenonMap() : this(1.9, 0.03)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="GeneralizedHenonMap"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: a, b)</param>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
     public GeneralizedHenonMap(double a, double b) : base(EqCount)
     {
         A = a;
@@ -33,7 +37,7 @@ public class GeneralizedHenonMap : SystemBase
 
     public double B { get; private set; }
 
-    public override string Name => "Generalized Henon map";
+    public override string Name => "Generalized Hénon map";
 
     public override void SetParameters(params double[] parameters)
     {
@@ -42,9 +46,9 @@ public class GeneralizedHenonMap : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = a — y² — bz<br/>
-    /// dy/dt = x<br/>
-    /// dz/dt = y
+    /// Xₙ₊₁ = a − yₙ² − bzₙ<br/>
+    /// yₙ₊₁ = xₙ<br/>
+    /// zₙ₊₁ = yₙ
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -60,7 +64,7 @@ public class GeneralizedHenonMap : SystemBase
     }
 
     /// <summary>
-    /// Set all to 0.
+    /// [0, 0, 0].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -71,7 +75,13 @@ public class GeneralizedHenonMap : SystemBase
         }
     }
 
-    public override string ToString() => $"{Name}: a = {A:F3}; b = {B:F4}";
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "a", "b"),
+            A, B);
 
-    public override string ToFileName() => $"{Name}_a={A:F3}_b={B:F4}";
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("gen-henon", "a", "b"),
+            A, B);
 }
