@@ -13,16 +13,22 @@ public class TinkerbellMap : SystemBase
     private double x, y;
 
     /// <summary>
-    /// For a = 0.9, b = -0.6, c = 2.0, d = 0.5.
+    /// Initializes a new instance of the <see cref="TinkerbellMap"/> class 
+    /// with default system parameters values:<br/>
+    /// a = 0.9, b = -0.6, c = 2.0, d = 0.5.
     /// </summary>
     public TinkerbellMap() : this(0.9, -0.6, 2.0, 0.5)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="TinkerbellMap"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: a, b, c, d)</param>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <param name="c"></param>
+    /// <param name="d"></param>
     public TinkerbellMap(double a, double b, double c, double d) : base(EqCount)
     {
         A = a;
@@ -50,8 +56,8 @@ public class TinkerbellMap : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = x² — y² + ax + by<br/>
-    /// dy/dt = 2xy + cx + dy
+    /// xₙ₊₁ = xₙ² − yₙ² + axₙ + byₙ<br/>
+    /// yₙ₊₁ = 2xₙyₙ + cxₙ + dyₙ
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -65,7 +71,7 @@ public class TinkerbellMap : SystemBase
     }
 
     /// <summary>
-    /// Set all to 0.001.
+    /// [0.001, 0.001].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -76,7 +82,13 @@ public class TinkerbellMap : SystemBase
         }
     }
 
-    public override string ToString() => $"{Name}: a = {A:F3}; b = {B:F3}; c = {C:F3}; d = {D:F3}";
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "a", "b", "c", "d"),
+            A, B, C, D);
 
-    public override string ToFileName() => $"{Name}_a={A:F3}_b={B:F3}_c={C:F3}_d={D:F3}";
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("tinkerbell", "a", "b", "c", "d"),
+            A, B, C, D);
 }

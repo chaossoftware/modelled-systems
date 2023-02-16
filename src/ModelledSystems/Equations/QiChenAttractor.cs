@@ -15,16 +15,21 @@ public class QiChenAttractor : SystemBase
     private double x, y, z;
 
     /// <summary>
-    /// For α = 38, β = 8/3, ς = 80.
+    /// Initializes a new instance of the <see cref="QiChenAttractor"/> class 
+    /// with default system parameters values:<br/>
+    /// α = 38, β = 8/3, ς = 80.
     /// </summary>
     public QiChenAttractor() : this(38, 8/3, 80)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="QiChenAttractor"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: α, β, ς)</param>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <param name="c"></param>
     public QiChenAttractor(double a, double b, double c) : base(EqCount)
     {
         A = a;
@@ -48,9 +53,9 @@ public class QiChenAttractor : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = α(y — x) + yz<br/>
-    /// dy/dt = ςx — y — xz<br/>
-    /// dz/dt = xy — βz
+    /// dx/dt = α(y − x) + yz<br/>
+    /// dy/dt = ςx − y − xz<br/>
+    /// dz/dt = xy − βz
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -66,7 +71,7 @@ public class QiChenAttractor : SystemBase
     }
 
     /// <summary>
-    /// Set all to 1.
+    /// [1, 1, 1].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -77,7 +82,13 @@ public class QiChenAttractor : SystemBase
         }
     }
 
-    public override string ToString() => $"{Name}: b = {B:F2}";
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "α", "β", "ς"),
+            A, B, C);
 
-    public override string ToFileName() => $"{Name}_b={B:F2}";
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("qi-chen", "a", "b", "c"),
+            A, B, C);
 }

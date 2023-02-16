@@ -13,16 +13,19 @@ public class LogisticMap : SystemBase
     private double x;
 
     /// <summary>
-    /// For r = 4.
+    /// Initializes a new instance of the <see cref="LogisticMap"/> class 
+    /// with default system parameters values:<br/>
+    /// R = 4.
     /// </summary>
     public LogisticMap() : this(4)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="LogisticMap"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: r)</param>
+    /// <param name="r"></param>
     public LogisticMap(double r) : base(EqCount)
     {
         R = r;
@@ -38,7 +41,7 @@ public class LogisticMap : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = rx * (1 — x)
+    /// xₙ₊₁ = Rxₙ * (1 − xₙ)
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -50,18 +53,21 @@ public class LogisticMap : SystemBase
     }
 
     /// <summary>
-    /// Set all to 0.1.
+    /// [0.1].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
     {
-        for (int i = 0; i < Count; i++)
-        {
-            current[0, i] = 0.1;
-        }
+        current[0, 0] = 0.1;
     }
 
-    public override string ToString() => $"{Name}: r = {R:F3}";
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "R"),
+            R);
 
-    public override string ToFileName() => $"{Name}_r={R:F3}";
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("logistic", "R"),
+            R);
 }

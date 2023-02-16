@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 
 namespace ModelledSystems
@@ -25,6 +26,9 @@ namespace ModelledSystems
         {
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+            Console.WriteLine($"Version: {versionInfo.ProductVersion}");
 
             var program = new Program();
 

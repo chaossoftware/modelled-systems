@@ -15,16 +15,19 @@ public class ThomasAttractor : SystemBase
     private double x, y, z;
 
     /// <summary>
-    /// For b = 0.19.
+    /// Initializes a new instance of the <see cref="ThomasAttractor"/> class 
+    /// with default system parameters values:<br/>
+    /// b = 0.19.
     /// </summary>
     public ThomasAttractor() : this(0.19)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="ThomasAttractor"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: b)</param>
+    /// <param name="b"></param>
     public ThomasAttractor(double b) : base(EqCount)
     {
         B = b;
@@ -40,9 +43,9 @@ public class ThomasAttractor : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = Sin(y) — bx<br/>
-    /// dy/dt = Sin(z) — by<br/>
-    /// dz/dt = Sin(x) — bz
+    /// dx/dt = sin(y) − bx<br/>
+    /// dy/dt = sin(z) − by<br/>
+    /// dz/dt = sin(x) − bz
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -58,7 +61,7 @@ public class ThomasAttractor : SystemBase
     }
 
     /// <summary>
-    /// 1, 0, 1.
+    /// [1, 0, 1].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -68,7 +71,13 @@ public class ThomasAttractor : SystemBase
         current[0, 2] = 1;
     }
 
-    public override string ToString() => $"{Name}: b = {B:F2}";
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "b"),
+            B);
 
-    public override string ToFileName() => $"{Name}_b={B:F2}";
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("thomas", "b"),
+            B);
 }

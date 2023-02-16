@@ -13,16 +13,20 @@ public class HenonMap : SystemBase
     private double x, y;
 
     /// <summary>
-    /// For a = 1.4, b = 0.3.
+    /// Initializes a new instance of the <see cref="HenonMap"/> class 
+    /// with default system parameters values:<br/>
+    /// a = 1.4, b = 0.3.
     /// </summary>
     public HenonMap() : this(1.4, 0.3)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="HenonMap"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: a, b)</param>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
     public HenonMap(double a, double b) : base(EqCount)
     {
         A = a;
@@ -33,7 +37,7 @@ public class HenonMap : SystemBase
 
     public double B { get; private set; }
 
-    public override string Name => "Henon map";
+    public override string Name => "Hénon map";
 
     public override void SetParameters(params double[] parameters)
     {
@@ -42,8 +46,8 @@ public class HenonMap : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = 1 — ax² + y<br/>
-    /// dy/dt = bx
+    /// xₙ₊₁ = 1 — axₙ² + yₙ<br/>
+    /// yₙ₊₁ = bxₙ
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -57,7 +61,7 @@ public class HenonMap : SystemBase
     }
 
     /// <summary>
-    /// Set all to 0.
+    /// [0, 0].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -68,7 +72,13 @@ public class HenonMap : SystemBase
         }
     }
 
-    public override string ToString() => $"{Name}: a = {A:F3}; b = {B:F3}";
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "a", "b"),
+            A, B);
 
-    public override string ToFileName() => $"{Name}_a={A:F3}_B={B:F3}";
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("henon", "a", "b"),
+            A, B);
 }

@@ -13,16 +13,21 @@ public class LorenzAttractor : SystemBase
     private double x, y, z;
 
     /// <summary>
-    /// For ϛ = 10, ρ = 28, β = 8/3.
+    /// Initializes a new instance of the <see cref="LorenzAttractor"/> class 
+    /// with default system parameters values:<br/>
+    /// ϛ = 10, ρ = 28, β = 8/3.
     /// </summary>
     public LorenzAttractor() : this(10, 28, 8d / 3d)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="LorenzAttractor"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: ϛ, ρ, β)</param>
+    /// <param name="sigma"></param>
+    /// <param name="rho"></param>
+    /// <param name="b"></param>
     public LorenzAttractor(double sigma, double rho, double b) : base(EqCount)
     {
         Sigma = sigma;
@@ -36,7 +41,7 @@ public class LorenzAttractor : SystemBase
 
     public double B { get; private set; }
 
-    public override string Name => "Lorenz attractor";
+    public override string Name => "Lorenz system";
 
     public override void SetParameters(params double[] parameters)
     {
@@ -46,9 +51,9 @@ public class LorenzAttractor : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = ϛ(y — x)<br/>
-    /// dy/dt = x(ρ — z) — y<br/>
-    /// dz/dt = xy — βz
+    /// dx/dt = ϛ(y − x)<br/>
+    /// dy/dt = x(ρ − z) − y<br/>
+    /// dz/dt = xy − βz
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -64,7 +69,7 @@ public class LorenzAttractor : SystemBase
     }
 
     /// <summary>
-    /// Set all to 1.
+    /// [1, 1, 1].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -75,7 +80,13 @@ public class LorenzAttractor : SystemBase
         }
     }
 
-    public override string ToString() => $"{Name}: sigma = {Sigma:F1}; rho = {Rho:F1}; b = {B:F2}";
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "ϛ", "ρ", "β"),
+            Sigma, Rho, B);
 
-    public override string ToFileName() => $"{Name}_sigma={Sigma:F1}_rho={Rho:F1}_b={B:F2}";
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("lorenz", "sg", "r", "b"),
+            Sigma, Rho, B);
 }

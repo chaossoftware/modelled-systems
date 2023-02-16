@@ -14,16 +14,19 @@ public class HalvorsenAttractor : SystemBase
     private double xMul4, yMul4, zMul4;
 
     /// <summary>
-    /// For a = 1.4.
+    /// Initializes a new instance of the <see cref="HalvorsenAttractor"/> class 
+    /// with default system parameters values:<br/>
+    /// a = 1.4.
     /// </summary>
     public HalvorsenAttractor() : this(1.4)
     {
     }
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="HalvorsenAttractor"/> class 
+    /// with specific system parameters values.
     /// </summary>
-    /// <param name="vars">params array (order: a)</param>
+    /// <param name="a"></param>
     public HalvorsenAttractor(double a) : base(EqCount)
     {
         A = a;
@@ -31,7 +34,7 @@ public class HalvorsenAttractor : SystemBase
 
     public double A { get; private set; }
 
-    public override string Name => "Halvorsen Attractor";
+    public override string Name => "Halvorsen attractor";
 
     public override void SetParameters(params double[] parameters)
     {
@@ -39,9 +42,9 @@ public class HalvorsenAttractor : SystemBase
     }
 
     /// <summary>
-    /// dx/dt = —ax — 4y —4z —y²<br/>
-    /// dy/dt = —ay — 4z —4x —z²<br/>
-    /// dz/dt = —az — 4x —4y —x²
+    /// dx/dt = −ax − 4y −4z −y²<br/>
+    /// dy/dt = −ay − 4z −4x −z²<br/>
+    /// dz/dt = −az − 4x −4y −x²
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -61,7 +64,7 @@ public class HalvorsenAttractor : SystemBase
     }
 
     /// <summary>
-    /// -1.48, -1.51, 2.04.
+    /// [−1.48, −1.51, 2.04].
     /// </summary>
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
@@ -71,7 +74,13 @@ public class HalvorsenAttractor : SystemBase
         current[0, 2] = 2.04;
     }
 
-    public override string ToString() => $"{Name}: a = {A:F2}";
+    public override string ToString() =>
+        string.Format(
+            SysFormat.GetInfoTemplate(Name, "a"),
+            A);
 
-    public override string ToFileName() => $"{Name}_a={A:F2}";
+    public override string ToFileName() =>
+        string.Format(
+            SysFormat.GetFileTemplate("halvorsen", "a"),
+            A);
 }
