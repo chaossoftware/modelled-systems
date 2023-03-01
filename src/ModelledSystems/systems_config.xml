@@ -2,7 +2,7 @@
 
   <ModelingTask>
     <TargetSystem>logistic</TargetSystem>
-    <Action>benettin_lle</Action>
+    <Action>signal</Action>
     <Orthogonalization type="mgs" interval="1"/>
     <!-- cgs , mgs , hh -->
 
