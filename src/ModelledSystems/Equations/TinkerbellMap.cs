@@ -15,9 +15,9 @@ public class TinkerbellMap : SystemBase
     /// <summary>
     /// Initializes a new instance of the <see cref="TinkerbellMap"/> class 
     /// with default system parameters values:<br/>
-    /// a = 0.9, b = -0.6, c = 2.0, d = 0.5.
+    /// a = 0.9, b = -0.6013, c = 2.0, d = 0.5.
     /// </summary>
-    public TinkerbellMap() : this(0.9, -0.6, 2.0, 0.5)
+    public TinkerbellMap() : this(0.9, -0.6013, 2.0, 0.5)
     {
     }
 
@@ -76,10 +76,8 @@ public class TinkerbellMap : SystemBase
     /// <param name="current">current solution</param>
     public override void SetInitialConditions(double[,] current)
     {
-        for (int i = 0; i < Count; i++)
-        {
-            current[0, i] = 0.001;
-        }
+        current[0, 0] = -0.72;
+        current[0, 1] = -0.64;
     }
 
     public override string ToString() =>

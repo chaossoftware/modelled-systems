@@ -40,17 +40,10 @@ internal class Bifurcation : Routine
 
         _solutionSeries.DataPoints.AddRange(_dataPoints);
 
-        DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_dataBifur_" + _param.Name), _solutionSeries.ToString());
+        DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_data_bifur_" + _param.Name), _solutionSeries.ToString());
 
-        var plt = new ScottPlot.Plot(Size.Width, Size.Height);
-        plt.XAxis.Label(_param.Name);
-        plt.YAxis.Label("X");
-
-        foreach (DataPoint dp in _solutionSeries.DataPoints)
-        {
-            plt.AddPoint(dp.X, dp.Y, Color.Blue, 1);
-        }
-
+        var plt = GetPlot(_param.Name, "x");
+        plt.AddScatterPoints(_solutionSeries.XValues, _solutionSeries.YValues, Color.Blue, 1);
         plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_bifur_" + _param.Name + ".png"));
     }
 

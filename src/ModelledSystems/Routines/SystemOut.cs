@@ -37,7 +37,7 @@ internal class SystemOut : Routine
 
     public override void Run()
     {
-        for (int i = 0; i <= _totalIterations; i++)
+        for (int i = 0; i < _totalIterations; i++)
         {
             solver.NexStep();
 

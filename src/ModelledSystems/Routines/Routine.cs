@@ -3,6 +3,7 @@ using System.Drawing;
 using ChaosSoft.NumericalMethods.Equations;
 using ModelledSystems.Equations;
 using ModelledSystems.Equations.Linearized;
+using ScottPlot;
 
 namespace ModelledSystems.Routines;
 
@@ -21,6 +22,19 @@ abstract class Routine
     public Size Size { get; set; }
 
     public abstract void Run();
+
+    protected Plot GetPlot(string xLabel, string yLabel)
+    {
+        Plot plot = new Plot(Size.Width, Size.Height);
+
+        plot.XAxis.LabelStyle(fontSize: 12);
+        plot.YAxis.LabelStyle(fontSize: 12);
+        plot.XAxis.Label(xLabel);
+        plot.YAxis.Label(yLabel);
+        plot.Layout(padding: 0);
+
+        return plot;
+    }
 
     protected SystemBase GetSystemEquations(double[] vars)
     {
@@ -89,7 +103,7 @@ abstract class Routine
                 eq = new RosslerLinearized();
                 break;
             case "henon":
-                eq = new HenonLinearized();
+                eq = new HenonMapLinearized();
                 break;
             case "henon_generalized":
                 eq = new GeneralizedHenonLinearized();

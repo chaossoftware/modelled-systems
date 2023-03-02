@@ -1,13 +1,9 @@
 ﻿namespace ModelledSystems.Equations.Linearized;
 
-/// <summary>
-/// Lorenz system equations
-/// parameters: sigma, r, b
-/// 3 linear and 9 non-linear equations
-/// Describes fluid flow
-/// </summary>
 public class LorenzLinearized : LorenzAttractor
 {
+    private double xl, yl, zl;
+
     public LorenzLinearized() : base()
     {
         Rows += EqCount;
@@ -33,9 +29,13 @@ public class LorenzLinearized : LorenzAttractor
         //Linearized Lorenz equations:
         for (int i = 0; i < Count; i++)
         {
-            derivs[1, i] = Sigma * (current[2, i] - current[1, i]);
-            derivs[2, i] = (Rho - current[0, 2]) * current[1, i] - current[2, i] - current[0, 0] * current[3, i];
-            derivs[3, i] = current[0, 1] * current[1, i] + current[0, 0] * current[2, i] - B * current[3, i];
+            xl = current[1, i];
+            yl = current[2, i];
+            zl = current[3, i];
+
+            derivs[1, i] = Sigma * (yl - xl);
+            derivs[2, i] = xl * (Rho - current[0, 2]) - yl - current[0, 0] * zl;
+            derivs[3, i] = xl * current[0, 1] + current[0, 0] * yl - B * zl;
         }
     }
 

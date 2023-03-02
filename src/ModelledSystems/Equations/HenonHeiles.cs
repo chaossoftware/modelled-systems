@@ -28,7 +28,7 @@ namespace ModelledSystems.Equations
         /// <summary>
         /// dx/dt = Vx<br/>
         /// dVx/dt = −x − 2xy<br/>
-        /// dy/dt = Vxy<br/>
+        /// dy/dt = Vy<br/>
         /// dVy/dt = −y − x² + y²<br/>
         /// </summary>
         /// <param name="current">current solution</param>

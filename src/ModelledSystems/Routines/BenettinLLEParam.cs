@@ -4,6 +4,7 @@ using ChaosSoft.NumericalMethods.Equations;
 using ChaosSoft.NumericalMethods.Lyapunov;
 using System;
 using System.Collections.Concurrent;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -40,13 +41,11 @@ internal class BenettinLLEParam : Routine
         _lleSeries.DataPoints.AddRange(_dataPoints);
         _lleSeries.DataPoints.Sort(delegate (DataPoint c1, DataPoint c2) { try { return c1.X.CompareTo(c2.X); } catch { } return 0; });
 
-        DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_data_lyapunov_param_" + _param.Name), _lleSeries.ToString());
+        DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_data_lle_" + _param.Name), _lleSeries.ToString());
 
-        var plt = new ScottPlot.Plot(Size.Width, Size.Height);
-        plt.AddSignalXY(_lleSeries.XValues, _lleSeries.YValues);
-        plt.XAxis.Label(_param.Name);
-        plt.YAxis.Label("LLE");
-        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_param_" + _param.Name + ".png"));
+        var plt = GetPlot(_param.Name, "LLE");
+        plt.AddSignalXY(_lleSeries.XValues, _lleSeries.YValues, Color.Blue);
+        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lle_" + _param.Name + ".png"));
     }
 
 

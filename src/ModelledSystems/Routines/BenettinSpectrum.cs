@@ -27,7 +27,8 @@ class BenettinSpectrum : Routine
     string Orthogonalization;
     int Irate;
 
-    public BenettinSpectrum(string outDir, SystemParameters systemParameters, string orthhogonalization, int irate) : base (outDir, systemParameters)
+    public BenettinSpectrum(string outDir, SystemParameters systemParameters, string orthhogonalization, int irate) : 
+        base (outDir, systemParameters)
     {
         Orthogonalization = orthhogonalization;
         Irate = irate;
@@ -70,7 +71,12 @@ class BenettinSpectrum : Routine
 
     private void WriteResults()
     {
-        Console.WriteLine(Format.General(lyap.Result, ",", 6));
+        Console.WriteLine("LES = " + Format.General(lyap.Result, ",", 6));
+
+        Console.WriteLine($"Dky = {Format.General(StochasticProperties.KYDimension(lyap.Result))}");
+        Console.WriteLine($"Eks = {Format.General(StochasticProperties.KSEntropy(lyap.Result))}");
+        Console.WriteLine($"PVC = {Format.General(StochasticProperties.PhaseVolumeContractionSpeed(lyap.Result))}");
+
         string fileNameStart = Path.Combine(OutDir, Equations.ToFileName());
 
         DataWriter.CreateDataFile(fileNameStart + ".le", lyap.Result.ToString());

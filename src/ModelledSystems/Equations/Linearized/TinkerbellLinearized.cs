@@ -1,11 +1,8 @@
 ﻿namespace ModelledSystems.Equations.Linearized;
 
-/// <summary>
-/// Henon system equations
-/// 2 linear and 4 non-linear equations
-/// </summary>
 public class TinkerbellLinearized : TinkerbellMap
 {
+    private double xl, yl;
 
     public TinkerbellLinearized() : base()
     {
@@ -23,14 +20,18 @@ public class TinkerbellLinearized : TinkerbellMap
     {
         base.GetDerivatives(current, derivs);
 
-        double x00Mul2 = 2 * current[0, 0];
-        double x01Mul2 = 2 * current[0, 1];
+        double xMul2 = 2 * current[0, 0];
+        double yMul2 = 2 * current[0, 1];
 
         //Linearized Tinkerbell map equations:
-        derivs[1, 0] = x00Mul2 * current[1, 0] + A * current[1, 0] - x01Mul2 * current[2, 0] + B * current[2, 0]; //2 * x[0, 0] * x[1, 0] + a * x[1, 0] - 2 * x[0, 1] * x[2, 0] + b * x[2, 0]
-        derivs[1, 1] = x00Mul2 * current[1, 1] + A * current[1, 1] - x01Mul2 * current[2, 1] + B * current[2, 1]; //2 * x[0, 0] * x[1, 1] + a * x[1, 1] - 2 * x[0, 1] * x[2, 1] + b * x[2, 1]
-        derivs[2, 0] = x01Mul2 * current[1, 0] + C * current[1, 0] + x00Mul2 * current[2, 0] + D * current[2, 0]; //2 * x[0, 1] * x[1, 0] + c * x[1, 0] + 2 * x[0, 0] * x[2, 0] + d * x[2, 0]
-        derivs[2, 1] = x01Mul2 * current[1, 1] + C * current[1, 1] + x00Mul2 * current[2, 1] + D * current[2, 1]; //2 * x[0, 1] * x[1, 1] + c * x[1, 1] + 2 * x[0, 0] * x[2, 1] + d * x[2, 1]
+        for (int i = 0; i < Count; i++)
+        {
+            xl = current[1, i];
+            yl = current[2, i];
+
+            derivs[1, i] = xMul2 * xl + A * xl - yMul2 * yl + B * yl;
+            derivs[2, i] = yMul2 * xl + C * xl + xMul2 * yl + D * yl;
+        }
     }
 
     public override void SetInitialConditions(double[,] current)
