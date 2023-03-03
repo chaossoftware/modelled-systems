@@ -1,5 +1,6 @@
 ﻿using ChaosSoft.Core.IO;
 using ChaosSoft.NumericalMethods.Equations;
+using System.Drawing;
 using System.IO;
 using System.Text;
 
@@ -23,7 +24,7 @@ internal class SystemOut : Routine
         equations = GetSystemEquations(SysParameters.Defaults);
         _eqN = equations.Count;
         
-        _totalIterations = (long)(SysParameters.ModellingTime / _eqStep);
+        _totalIterations = (long)(SysParameters.ModellingTime / _eqStep) + 1;
 
         outArray = new double[_eqN][];
         
@@ -54,7 +55,7 @@ internal class SystemOut : Routine
     {
         StringBuilder output = new StringBuilder();
 
-        string fileNameStart = Path.Combine(OutDir, equations.ToFileName() + $"_st={_eqStep:F3}");
+        string fileNameStart = Path.Combine(OutDir, equations.ToFileName() + $"_st={_eqStep:0.###}");
 
         double[] xt = new double[_totalIterations];
         double[] yt = new double[_totalIterations];
@@ -78,6 +79,13 @@ internal class SystemOut : Routine
             zt[cnt] = _eqN > 2 ? outArray[2][cnt] : 1;
 
             t += _eqStep;
+        }
+
+        if(_eqN > 1)
+        {
+            var plt = GetPlot("x", "y");
+            plt.AddScatterPoints(xt, yt, Color.Blue, 1);
+            plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_attractor.png"));
         }
         
         if (_binaryOutput)

@@ -6,7 +6,8 @@
     <Orthogonalization type="mgs" interval="1"/>
     <!-- cgs , mgs , hh -->
 
-    <Output outDir="Output" picHeight="400" picWidth="640" binaryOutput="false"/>
+    <Output outDir="Output" picWidth="320" picHeight="240" binaryOutput="false"/>
+    <!--picWidth = 384 better for heatmaps-->
   </ModelingTask>
 
   <Routines>

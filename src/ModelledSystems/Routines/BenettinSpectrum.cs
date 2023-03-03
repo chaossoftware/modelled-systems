@@ -71,11 +71,11 @@ class BenettinSpectrum : Routine
 
     private void WriteResults()
     {
-        Console.WriteLine("LES = " + Format.General(lyap.Result, ",", 6));
+        Console.WriteLine("LES = " + Format.General(lyap.Result, ",", 5));
 
-        Console.WriteLine($"Dky = {Format.General(StochasticProperties.KYDimension(lyap.Result))}");
-        Console.WriteLine($"Eks = {Format.General(StochasticProperties.KSEntropy(lyap.Result))}");
-        Console.WriteLine($"PVC = {Format.General(StochasticProperties.PhaseVolumeContractionSpeed(lyap.Result))}");
+        Console.WriteLine($"Dky = {Format.General(StochasticProperties.KYDimension(lyap.Result), 5)}");
+        Console.WriteLine($"Eks = {Format.General(StochasticProperties.KSEntropy(lyap.Result), 5)}");
+        Console.WriteLine($"PVC = {Format.General(StochasticProperties.PhaseVolumeContractionSpeed(lyap.Result), 5)}");
 
         string fileNameStart = Path.Combine(OutDir, Equations.ToFileName());
 
