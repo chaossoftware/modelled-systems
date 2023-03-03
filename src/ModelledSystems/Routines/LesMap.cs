@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,10 +36,10 @@ internal class LesMap : Routine
 
         xBegin = xParameter.Start;
         yBegin = yParameter.Start;
-        xStep = (xEnd - xBegin) / _iterations;
-        yStep = (yEnd - yBegin) / _iterations;
         xEnd = xParameter.End;
         yEnd = yParameter.End;
+        xStep = (xEnd - xBegin) / _iterations;
+        yStep = (yEnd - yBegin) / _iterations;
 
         var totalIterations = _iterations * _iterations;
 
@@ -60,16 +59,13 @@ internal class LesMap : Routine
 
     private void GetImage()
     {
-        var plt = new ScottPlot.Plot(Size.Width, Size.Height);
-        
-        plt.XAxis.Label(xParameter.Name);
-        plt.YAxis.Label(yParameter.Name);
+        var plt = GetPlot(xParameter.Name, yParameter.Name);
 
         int maxPositiveLeIndex = (int)Matrix.Max(_arr);
         int minLeIndex = (int)Matrix.Min(_arr);
         MakeGradient(maxPositiveLeIndex);
 
-        var hm = plt.AddHeatmap(_arr, ScottPlot.Drawing.Colormap.Jet, lockScales: false);
+        var hm = plt.AddHeatmap(_arr, ScottPlot.Drawing.Colormap.Turbo, lockScales: false);
         var cb = plt.AddColorbar(hm);
         hm.Smooth = true;
         plt.Margins(0, 0);
@@ -86,7 +82,9 @@ internal class LesMap : Routine
         plt.XTicks(new double[] { 0, _iterations }, new string[] { xBegin.ToString(), xEnd.ToString() });
         plt.YTicks(new double[] { 0, _iterations }, new string[] { yBegin.ToString(), yEnd.ToString() });
 
-        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_map.png"));
+        string fName = $"_lyapunov_map_{xParameter.Name}_{yParameter.Name}.png";
+
+        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + fName));
     }
 
     public void Func(int z /*double xparam, double yParam, int x, int y*/)
