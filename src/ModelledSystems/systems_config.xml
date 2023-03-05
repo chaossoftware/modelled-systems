@@ -65,8 +65,8 @@
       <Solver name="rk4" time="250" dt="0.01"/>
       <Parameters>
         <Param name="ϛ" value="10.0" range="0..40"/>
-        <Param name="ρ" value="28.0" range="0..150"/>
-        <Param name="β" value="8/3" range="0..4"/>
+        <Param name="r" value="28.0" range="0..150"/>
+        <Param name="b" value="8/3" range="0..4"/>
       </Parameters>
     </System>
 

@@ -33,8 +33,8 @@ public class LorenzLinearized : LorenzAttractor
             yl = current[2, i];
             zl = current[3, i];
 
-            derivs[1, i] = Sigma * (yl - xl);
-            derivs[2, i] = xl * (Rho - current[0, 2]) - yl - current[0, 0] * zl;
+            derivs[1, i] = Sg * (yl - xl);
+            derivs[2, i] = xl * (R - current[0, 2]) - yl - current[0, 0] * zl;
             derivs[3, i] = xl * current[0, 1] + current[0, 0] * yl - B * zl;
         }
     }

@@ -15,7 +15,7 @@ public class LorenzAttractor : SystemBase
     /// <summary>
     /// Initializes a new instance of the <see cref="LorenzAttractor"/> class 
     /// with default system parameters values:<br/>
-    /// ϛ = 10, ρ = 28, β = 8/3.
+    /// ϛ = 10, r = 28, b = 8/3.
     /// </summary>
     public LorenzAttractor() : this(10, 28, 8d / 3d)
     {
@@ -25,19 +25,19 @@ public class LorenzAttractor : SystemBase
     /// Initializes a new instance of the <see cref="LorenzAttractor"/> class 
     /// with specific system parameters values.
     /// </summary>
-    /// <param name="sigma"></param>
-    /// <param name="rho"></param>
+    /// <param name="sg"></param>
+    /// <param name="r"></param>
     /// <param name="b"></param>
-    public LorenzAttractor(double sigma, double rho, double b) : base(EqCount)
+    public LorenzAttractor(double sg, double r, double b) : base(EqCount)
     {
-        Sigma = sigma;
-        Rho = rho;
+        Sg = sg;
+        R = r;
         B = b;
     }
 
-    public double Sigma { get; private set; }
+    public double Sg { get; private set; }
 
-    public double Rho { get; private set; }
+    public double R { get; private set; }
 
     public double B { get; private set; }
 
@@ -45,15 +45,15 @@ public class LorenzAttractor : SystemBase
 
     public override void SetParameters(params double[] parameters)
     {
-        Sigma = parameters[0];
-        Rho = parameters[1];
+        Sg = parameters[0];
+        R = parameters[1];
         B = parameters[2];
     }
 
     /// <summary>
     /// dx/dt = ϛ(y − x)<br/>
-    /// dy/dt = x(ρ − z) − y<br/>
-    /// dz/dt = xy − βz
+    /// dy/dt = x(r − z) − y<br/>
+    /// dz/dt = xy − bz
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
@@ -63,8 +63,8 @@ public class LorenzAttractor : SystemBase
         y = current[0, 1];
         z = current[0, 2];
 
-        derivs[0, 0] = Sigma * (y - x);
-        derivs[0, 1] = x * (Rho - z) - y;
+        derivs[0, 0] = Sg * (y - x);
+        derivs[0, 1] = x * (R - z) - y;
         derivs[0, 2] = x * y - B * z;
     }
 
@@ -82,11 +82,11 @@ public class LorenzAttractor : SystemBase
 
     public override string ToString() =>
         string.Format(
-            SysFormat.GetInfoTemplate(Name, "ϛ", "ρ", "β"),
-            Sigma, Rho, B);
+            SysFormat.GetInfoTemplate(Name, "ϛ", "r", "b"),
+            Sg, R, B);
 
     public override string ToFileName() =>
         string.Format(
             SysFormat.GetFileTemplate("lorenz", "sg", "r", "b"),
-            Sigma, Rho, B);
+            Sg, R, B);
 }

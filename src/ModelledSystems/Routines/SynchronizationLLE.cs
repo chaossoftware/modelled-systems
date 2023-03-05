@@ -42,14 +42,8 @@ internal class SynchronizationLLE : Routine
 
         //DataWriter.CreateDataFile("fileName", SyncMapSeries.ToString());
 
-        var plt = new ScottPlot.Plot(Size.Width, Size.Height);
-        plt.XAxis.Label("p");
-        plt.YAxis.Label("Δ");
-
-        foreach (DataPoint dp in _syncSeries.DataPoints)
-        {
-            plt.AddPoint(dp.X, dp.Y, Color.Blue, 1);
-        }
+        var plt = GetPlot("p", "Δ");
+        plt.AddScatterPoints(_syncSeries.XValues, _syncSeries.YValues, Color.Blue, 1)
 
         plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_stefanski.png"));
 
@@ -102,6 +96,8 @@ internal class SynchronizationLLE : Routine
                 return new HenonGeneralizedAugmented();
             case "logistic":
                 return new LogisticAugmented();
+            case "tinkerbell":
+                return new TinkerbellAugmented();
             default:
                 throw new ArgumentException();
         }

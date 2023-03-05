@@ -32,7 +32,7 @@ class BenettinLLE : Routine
         benettin.Calculate();
         //WriteResults();
         Console.WriteLine(benettin.ToString());
-        Console.WriteLine("\nResult:\n" + benettin.GetResultAsString());
+        Console.WriteLine("\nLLE = " + benettin.GetResultAsString());
     }
 
     private void WriteResults()
