@@ -24,6 +24,7 @@ namespace ModelledSystems
 
         public static void Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.Unicode;
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
@@ -66,18 +67,18 @@ namespace ModelledSystems
                 case "signal":
                     routine = new SystemOut(_outDir, _params.SystemParameters, _params.BinOutput);
                     break;
-                case "benettin_les":
+                case "le_spec":
                     routine = new BenettinSpectrum(_outDir, _params.SystemParameters, _params.Orthogonalization, _params.Iterations);
                     break;
-                case "benettin_lle":
+                case "lle":
                     routine = new BenettinLLE(_outDir, _params.SystemParameters);
                     break;
-                case "benettin_lle_param":
+                case "lle_by_param":
                     int paramIndexLle = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
                     int paramIterations = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
                     routine = new BenettinLLEParam(_outDir, _params.SystemParameters, paramIndexLle, paramIterations);
                     break;
-                case "le_map":
+                case "le_spec_map":
                     int mapX = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
                     int mapY = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
                     int mapParamIterations = Convert.ToInt32(_params.ActionParams.Split('|')[2]);
@@ -88,7 +89,7 @@ namespace ModelledSystems
                     int paramIterationsB = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
                     routine = new Bifurcation(_outDir, _params.SystemParameters, paramIndex, paramIterationsB);
                     break;
-                case "synchronization_lle":
+                case "lle_sync":
                     int p = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
                     double pstep = Convert.ToDouble(_params.ActionParams.Split('|')[1]);
                     routine = new SynchronizationLLE(_outDir, _params.SystemParameters, p, pstep);

@@ -1,4 +1,5 @@
 ﻿using ChaosSoft.Core.Data;
+using ChaosSoft.Core.IO;
 using ModelledSystems.Equations.Augmented;
 using System;
 using System.Collections.Concurrent;
@@ -43,7 +44,7 @@ internal class SynchronizationLLE : Routine
         //DataWriter.CreateDataFile("fileName", SyncMapSeries.ToString());
 
         var plt = GetPlot("p", "Δ");
-        plt.AddScatterPoints(_syncSeries.XValues, _syncSeries.YValues, Color.Blue, 1)
+        plt.AddScatterPoints(_syncSeries.XValues, _syncSeries.YValues, Color.Blue, 1);
 
         plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_stefanski.png"));
 
@@ -56,7 +57,7 @@ internal class SynchronizationLLE : Routine
             sync = Math.Abs(_syncSeries.DataPoints[--k].Y - rezY) < 1e-8;
         }
 
-        Console.WriteLine(_syncSeries.DataPoints[k++].X.ToString("F5"));
+        Console.WriteLine("\nLLE = " + Format.General(_syncSeries.DataPoints[k++].X, 5));
     }
 
 
@@ -70,11 +71,15 @@ internal class SynchronizationLLE : Routine
         for (int j = 0; j < _totalIterations; j++)
         {
             solver.NexStep();
+
             if (j > _totalIterations - _lastIter)
             {
                 double rez = solver.Solution[0, augmentedEquations.Count - augmentedEquations.Count / 3];
+
                 if (!double.IsInfinity(rez) && !double.IsNaN(rez) && rez < 100 && rez > -100)
+                {
                     _dataPoints.Add(new DataPoint(p, rez));
+                }
             }
         }
 
