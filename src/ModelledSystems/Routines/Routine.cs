@@ -77,11 +77,14 @@ abstract class Routine
             case "charo":
                 eq = new CharoAttractor();
                 break;
-            case "henon_helies":
+            case "henon_heiles":
                 eq = new HenonHeiles();
                 break;
             case "anischenko_nikolaev":
                 eq = new AnishchenkoNikolaev();
+                break;
+            case "klein_baier":
+                eq = new KleinBaier();
                 break;
             default:
                 throw new ArgumentException($"No such system: {SysParameters.SystemName}");
@@ -113,6 +116,12 @@ abstract class Routine
                 break;
             case "tinkerbell":
                 eq = new TinkerbellLinearized();
+                break;
+            case "henon_heiles":
+                eq = new HenonHeilesLinearized();
+                break;
+            case "klein_baier":
+                eq = new KleinBaierLinearized();
                 break;
             default:
                 throw new ArgumentException($"No such system: {SysParameters.SystemName}");

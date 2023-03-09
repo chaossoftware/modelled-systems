@@ -133,7 +133,7 @@
       </Parameters>
     </System>
 
-    <System name="henon_helies">
+    <System name="henon_heiles">
       <Solver name="rk4" time="250" dt="0.01"/>
       <Parameters/>
     </System>
@@ -145,6 +145,17 @@
         <Param name="β" value="0.43" range="0..2.5"/>
         <Param name="δ" value="0.001" range="0..2.5"/>
         <Param name="μ" value="0.0809" range="0..2.5"/>
+      </Parameters>
+    </System>
+
+    <System name="klein_baier">
+      <Solver name="rk4" time="250" dt="0.01"/>
+      <Parameters>
+        <Param name="a" value="0.15" range="NaN..NaN"/>
+        <Param name="b" value="0.25" range="NaN..NaN"/>
+        <Param name="c" value="0.1" range="NaN..NaN"/>
+        <Param name="d" value="0.3922" range="NaN..NaN"/>
+        <Param name="e" value="0.05" range="NaN..NaN"/>
       </Parameters>
     </System>
 
