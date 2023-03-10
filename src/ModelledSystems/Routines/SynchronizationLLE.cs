@@ -20,12 +20,12 @@ internal class SynchronizationLLE : Routine
     private readonly int _lastIter = 100;
     private readonly ConcurrentBag<DataPoint> _dataPoints;
 
-    public SynchronizationLLE(string outDir, SystemParameters systemParameters, int pIter, double pstep) : base (outDir, systemParameters)
+    public SynchronizationLLE(string outDir, SystemCfg sysConfig, int pIter, double pstep) : base (outDir, sysConfig)
     {
         _syncSeries = new DataSeries();
         _pIter = pIter;
         _pStep = pstep;
-        _totalIterations = (int)(SysParameters.ModellingTime * SysParameters.Step);
+        _totalIterations = (int)(SysConfig.Solver.ModellingTime * SysConfig.Solver.Dt);
         _dataPoints = new ConcurrentBag<DataPoint>();
         _progress = new TaskProgress(_totalIterations);
     }
@@ -46,7 +46,7 @@ internal class SynchronizationLLE : Routine
         var plt = GetPlot("p", "Δ");
         plt.AddScatterPoints(_syncSeries.XValues, _syncSeries.YValues, Color.Blue, 1);
 
-        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_stefanski.png"));
+        plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + "_lyapunov_stefanski.png"));
 
         int k = _syncSeries.Length - 1;
         double rezY = _syncSeries.DataPoints[k].Y;
@@ -60,13 +60,12 @@ internal class SynchronizationLLE : Routine
         Console.WriteLine("\nLLE = " + Format.General(_syncSeries.DataPoints[k++].X, 5));
     }
 
-
     private void Func(double p)
     {
         AugmentedEquations augmentedEquations = GetSystemEquations();
         augmentedEquations.p = p;
 
-        var solver = GetSolver(SysParameters.Solver, augmentedEquations, SysParameters.Step);
+        var solver = GetSolver(augmentedEquations);
 
         for (int j = 0; j < _totalIterations; j++)
         {
@@ -86,26 +85,18 @@ internal class SynchronizationLLE : Routine
         _progress.Iterate();
     }
 
-
     private AugmentedEquations GetSystemEquations()
     {
-        switch (SysParameters.SystemName.ToLower())
+        return SysConfig.Name.ToLowerInvariant() switch
         {
-            case "lorenz":
-                return new LorenzAugmented();
-            case "rossler":
-                return new RosslerAugmented();
-            case "henon":
-                return new HenonAugmented();
-            case "henon_generalized":
-                return new HenonGeneralizedAugmented();
-            case "logistic":
-                return new LogisticAugmented();
-            case "tinkerbell":
-                return new TinkerbellAugmented();
-            default:
-                throw new ArgumentException();
-        }
+            "lorenz" => new LorenzAugmented(),
+            "rossler" => new RosslerAugmented(),
+            "henon" => new HenonAugmented(),
+            "henon_generalized" => new HenonGeneralizedAugmented(),
+            "logistic" => new LogisticAugmented(),
+            "tinkerbell" => new TinkerbellAugmented(),
+            _ => throw new ArgumentException(),
+        };
     }
 
 }

@@ -1,68 +1,67 @@
 ﻿using ChaosSoft.Core.IO;
+using ChaosSoft.NumericalMethods.Equations;
 using ChaosSoft.NumericalMethods.Lyapunov;
 using ChaosSoft.NumericalMethods.Orthogonalization;
 using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace ModelledSystems.Routines;
 
-class BenettinSpectrum : Routine
+internal class BenettinSpectrum : Routine
 {
-    int i, counter;            //counters 
-    long TotIter;
-    int EqN;
-    double EqStep;
+    private readonly long _iterations;
+    private readonly int _eqCount;
 
-    double[] R;          //normalized vector (triangular matrix)
+    private readonly LeSpecBenettin _leSpec;
+    private double[] _rMatrix;          //normalized vector (triangular matrix)
+    //private readonly double[,] _leSpecInTime;
 
-    //double[,] outArray;
+    private readonly SystemBase _equations;
+    private readonly SolverBase _solver;
+    private readonly double _dt;
+    private readonly OrthogonalizationBase _orthogonalization;
+    private readonly int _irate;
 
-    static OrthogonalizationBase ort;
-    static LeSpecBenettin lyap;
-    static ChaosSoft.NumericalMethods.Equations.SystemBase Equations;
-    static ChaosSoft.NumericalMethods.Equations.SolverBase solver;
-    
-    string Orthogonalization;
-    int Irate;
+    private int j, i;            //counters 
 
-    public BenettinSpectrum(string outDir, SystemParameters systemParameters, string orthhogonalization, int irate) : 
-        base (outDir, systemParameters)
+    public BenettinSpectrum(string outDir, SystemCfg sysConfig, OrthogonalizationCfg orthogonalization) : 
+        base (outDir, sysConfig)
     {
-        Orthogonalization = orthhogonalization;
-        Irate = irate;
-        EqStep = SysParameters.Step;
+        _irate = orthogonalization.Interval;
+        _dt = SysConfig.Solver.Dt;
 
-        Equations = GetLinearizedSystemEquations(SysParameters.Defaults);
+        _equations = GetLinearizedSystemEquations(SysConfig.ParamsValues);
+        _solver = GetSolver(_equations);
 
-        solver = GetSolver(SysParameters.Solver, Equations, EqStep);
+        _eqCount = _equations.Count;
 
-
-        EqN = Equations.Count;
-
-        ort = GetOrthogonalization(Orthogonalization);
-        TotIter = (long)(SysParameters.ModellingTime / EqStep);
-        lyap = new LeSpecBenettin(EqN);
-        R = new double[EqN];
-        //outArray = new double[TotIter, EqN];
+        _orthogonalization = GetOrthogonalization(orthogonalization.Type, _eqCount);
+        _iterations = (long)(SysConfig.Solver.ModellingTime / _dt);
+        _leSpec = new LeSpecBenettin(_eqCount);
+        _rMatrix = new double[_eqCount];
+        //_leSpecInTime = new double[_iterations, _eqCount];
     }
 
     public override void Run()
     {
-        for (counter = 0; counter < TotIter; counter++)
+        for (i = 0; i < _iterations; i++)
         {
-            for (i = 0; i < Irate; i++)
-                solver.NexStep();
+            for (j = 0; j < _irate; j++)
+            {
+                _solver.NexStep();
+            }
 
             //------------------- Call Orthonormalization -------------
-            ort.Perform(solver.Solution, R);
+            _orthogonalization.Perform(_solver.Solution, _rMatrix);
 
-            lyap.CalculateLyapunovSpectrum(R, solver.Time);
+            _leSpec.CalculateLyapunovSpectrum(_rMatrix, _solver.Time);
 
             //------------------- normalize and print exponent ------------
-            //for (int k = 0; k < equations.N; k++)
-            //  outArray[counter, k] = lyap.lespec[k];
+            //for (j = 0; j < _eqCount; j++)
+            //{
+            //    _leSpecInTime[i, j] = _leSpec.Result[j];
+            //}
         }
 
         WriteResults();
@@ -71,47 +70,33 @@ class BenettinSpectrum : Routine
 
     private void WriteResults()
     {
-        Console.WriteLine("LES = " + Format.General(lyap.Result, ",", 5));
+        Console.WriteLine("LES = " + Format.General(_leSpec.Result, ",", 5));
 
-        Console.WriteLine($"Dky = {Format.General(StochasticProperties.KYDimension(lyap.Result), 5)}");
-        Console.WriteLine($"Eks = {Format.General(StochasticProperties.KSEntropy(lyap.Result), 5)}");
-        Console.WriteLine($"PVC = {Format.General(StochasticProperties.PhaseVolumeContractionSpeed(lyap.Result), 5)}");
+        Console.WriteLine($"Dky = {Format.General(StochasticProperties.KYDimension(_leSpec.Result), 5)}");
+        Console.WriteLine($"Eks = {Format.General(StochasticProperties.KSEntropy(_leSpec.Result), 5)}");
+        Console.WriteLine($"PVC = {Format.General(StochasticProperties.PhaseVolumeContractionSpeed(_leSpec.Result), 5)}");
 
-        string fileNameStart = Path.Combine(OutDir, Equations.ToFileName());
+        string fileNameStart = Path.Combine(OutDir, _equations.ToFileName());
 
-        DataWriter.CreateDataFile(fileNameStart + ".le", lyap.Result.ToString());
-
+        DataWriter.CreateDataFile(fileNameStart + ".le", _leSpec.Result.ToString());
         
-        StringBuilder output = new StringBuilder();
-        /*
-        double t = 0;
-        for (int cnt = 0; cnt < TotIter; cnt++)
-        {
-            output.AppendFormat("{0:F5}", t);
+        //double t = 0;
+        //StringBuilder output = new StringBuilder();
 
-            for (int k = 0; k < EqN; k++)
-                output.AppendFormat("\t{0:F15}", outArray[cnt, k]);
+        //for (i = 0; i < _iterations; i++)
+        //{
+        //    output.AppendFormat("{0:F5}", t);
 
-            output.Append("\n");
+        //    for (j = 0; j < _eqCount; j++)
+        //    {
+        //        output.AppendFormat("\t{0:F15}", _leSpecInTime[i, j]);
+        //    }
 
-            t += EqStep;
-        }
-        DataWriter.CreateDataFile(equations.SystemName + "_inTime.le", output.ToString());
-        */
-    }
+        //    output.AppendLine();
 
+        //    t += _dt;
+        //}
 
-    private OrthogonalizationBase GetOrthogonalization(string ortType)
-    {
-        ortType = ortType.ToLower();
-
-        if (ortType == "mgs")
-            return new ModifiedGrammSchmidt(EqN);
-        else if (ortType == "cgs")
-            return new ClassicGrammSchmidt(EqN);
-        else if (ortType == "hh")
-            return new HouseholderTransformation(EqN);
-
-        return new ModifiedGrammSchmidt(EqN);
+        //DataWriter.CreateDataFile(SysConfig.Name + "_inTime.le", output.ToString());
     }
 }

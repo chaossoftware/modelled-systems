@@ -16,12 +16,12 @@ class BenettinLLE : Routine
 
     private long TotIter;
 
-    public BenettinLLE(string outDir, SystemParameters systemParameters) : base (outDir, systemParameters)
+    public BenettinLLE(string outDir, SystemCfg sysConfig) : base (outDir, sysConfig)
     {
-        _equations = GetSystemEquations(SysParameters.Defaults);
-        _solverType = GetSolverType(SysParameters.Solver);
-        _eqStep = SysParameters.Step;
-        TotIter = (long)(SysParameters.ModellingTime / _eqStep);
+        _equations = GetSystemEquations(SysConfig.ParamsValues);
+        _solverType = GetSolverType();
+        _eqStep = SysConfig.Solver.Dt;
+        TotIter = (long)(SysConfig.Solver.ModellingTime / _eqStep) * 1000;
         fileNameStart = Path.Combine(OutDir, _equations.Name);
         //outArray = new double[TotIter];
     }

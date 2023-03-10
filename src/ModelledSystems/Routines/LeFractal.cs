@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using ChaosSoft.Core.DataUtils;
 using ChaosSoft.NumericalMethods.Equations;
@@ -16,18 +16,18 @@ internal class LeFractal : Routine
 
     private readonly TaskProgress _progress;
     private readonly int _iterations;
-    private readonly Parameter _parameter;
+    private readonly SysParamCfg _parameter;
     private readonly double _step;
 
-    public LeFractal(string outDir, SystemParameters systemParameters, int paramIndex, int iterations, string sequence) 
-        : base(outDir, systemParameters)
+    public LeFractal(string outDir, SystemCfg sysConfig, int paramIndex, int iterations, string sequence) 
+        : base(outDir, sysConfig)
     {
         _paramIndex = paramIndex;
         _sequence = sequence;
 
-        _parameter = SysParameters.ListParameters[paramIndex];
+        _parameter = SysConfig.Params[paramIndex];
         _iterations = iterations;
-        _step = (_parameter.End - _parameter.Start) / _iterations;
+        _step = (_parameter.To - _parameter.From) / _iterations;
         _progress = new TaskProgress(_iterations * _iterations);
 
         _arr = new double[_iterations, _iterations];
@@ -42,11 +42,8 @@ internal class LeFractal : Routine
 
     private void GetImage()
     {
-        var plt = new ScottPlot.Plot(Size.Width, Size.Height);
+        var plt = GetPlot(_parameter.Name, _parameter.Name);
         
-        plt.XAxis.Label(_parameter.Name);
-        plt.YAxis.Label(_parameter.Name);
-
         //int maxPositiveLeIndex = (int)Matrixes.Max(_arr);
         //int minLeIndex = (int)Matrixes.Min(_arr);
         MakeGradient();
@@ -64,11 +61,13 @@ internal class LeFractal : Routine
         //    ticks.Select(t => t.ToString()).ToArray(), 
         //    min: minLeIndex, 
         //    max: maxPositiveLeIndex);
+        double[] positions = new double[] { 0, _iterations };
+        string[] labels = new string[] { _parameter.From.ToString(), _parameter.To.ToString() };
 
-        plt.XTicks(new double[] { 0, _iterations }, new string[] { _parameter.Start.ToString(), _parameter.End.ToString() });
-        plt.YTicks(new double[] { 0, _iterations }, new string[] { _parameter.Start.ToString(), _parameter.End.ToString() });
+        plt.XTicks(positions, labels);
+        plt.YTicks(positions, labels);
 
-        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_fractal.png"));
+        plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + "_lyapunov_fractal.png"));
     }
 
     public void Func(int z)
@@ -76,17 +75,22 @@ internal class LeFractal : Routine
         int x = z / _iterations;
         int y = z % _iterations;
 
-        double firstValue = _parameter.Start + x * _step;
-        double secondValue = _parameter.Start + y * _step;
-        double[] vars = new double[SysParameters.Defaults.Length];
-        Array.Copy(SysParameters.Defaults, vars, vars.Length);
+        double firstValue = _parameter.From + x * _step;
+        double secondValue = _parameter.From + y * _step;
+        double[] vars = new double[SysConfig.ParamsValues.Length];
+        Array.Copy(SysConfig.ParamsValues, vars, vars.Length);
 
-        SystemBase equations = GetLinearizedSystemEquations(vars);
-        Type solverType = GetSolverType(SysParameters.Solver);
-        double eqStep = SysParameters.Step;
-        long totIter = (long)(SysParameters.ModellingTime / eqStep);
+        SystemBase equations = GetSystemEquations(vars);
+        Type solverType = GetSolverType();
+        double eqStep = SysConfig.Solver.Dt;
+        long totIter = (long)(SysConfig.Solver.ModellingTime / eqStep);
 
         LleBenettin benettin = new LleBenettin(equations, solverType, eqStep, totIter);
+
+        // Synthetically need to make different initial conditions (solvers are not accessible)
+        SolverBase solver1 = benettin.GetType().GetField("_solver1", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(benettin) as SolverBase;
+        SolverBase solver2 = benettin.GetType().GetField("_solver2", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(benettin) as SolverBase;
+        solver2.Solution[0, 0] += solver1.Solution[0, 0] + 1E-08;
 
         for (int i = 0; i < totIter; i++)
         {

@@ -17,16 +17,16 @@ internal class BenettinLLEParam : Routine
     private readonly int _paramIndex;
     private readonly int _totalIterations;
     private readonly ConcurrentBag<DataPoint> _dataPoints;
-    private readonly Parameter _param;
+    private readonly SysParamCfg _param;
     private readonly double _step;
 
-    public BenettinLLEParam(string outDir, SystemParameters systemParameters, int paramIndex, int iterations) : base(outDir, systemParameters)
+    public BenettinLLEParam(string outDir, SystemCfg sysConfig, int paramIndex, int iterations) : base(outDir, sysConfig)
     {
         _lleSeries = new DataSeries();
         _paramIndex = paramIndex;
-        _param = SysParameters.ListParameters[_paramIndex];
+        _param = SysConfig.Params[_paramIndex];
         _totalIterations = iterations;
-        _step = (_param.End - _param.Start) / _totalIterations;
+        _step = (_param.To - _param.From) / _totalIterations;
         _dataPoints = new ConcurrentBag<DataPoint>();
         _progress = new TaskProgress(_totalIterations);
     }
@@ -35,30 +35,30 @@ internal class BenettinLLEParam : Routine
     {
         Parallel.For(0, _totalIterations, i =>
         {
-            Func(_param.Start + _step * i);
+            Func(_param.From + _step * i);
         });
 
         _lleSeries.DataPoints.AddRange(_dataPoints);
         _lleSeries.DataPoints.Sort(delegate (DataPoint c1, DataPoint c2) { try { return c1.X.CompareTo(c2.X); } catch { } return 0; });
 
-        DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_data_lle_" + _param.Name), _lleSeries.ToString());
+        DataWriter.CreateDataFile(Path.Combine(OutDir, SysConfig.Name + "_data_lle_" + _param.Name), _lleSeries.ToString());
 
         var plt = GetPlot(_param.Name, "LLE");
         plt.AddSignalXY(_lleSeries.XValues, _lleSeries.YValues, Color.Blue);
-        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lle_" + _param.Name + ".png"));
+        plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + "_lle_" + _param.Name + ".png"));
     }
 
 
     private void Func(double p)
     {
-        double[] vars = new double[SysParameters.Defaults.Length];
-        Array.Copy(SysParameters.Defaults, vars, vars.Length);
+        double[] vars = new double[SysConfig.ParamsValues.Length];
+        Array.Copy(SysConfig.ParamsValues, vars, vars.Length);
         vars[_paramIndex] = p;
 
         SystemBase equations = GetSystemEquations(vars);
-        Type solverType = GetSolverType(SysParameters.Solver);
-        double eqStep = SysParameters.Step;
-        long totIter = (long)(SysParameters.ModellingTime / eqStep);
+        Type solverType = GetSolverType();
+        double eqStep = SysConfig.Solver.Dt;
+        long totIter = (long)(SysConfig.Solver.ModellingTime / eqStep);
 
         LleBenettin benettin = new LleBenettin(equations, solverType, eqStep, totIter);
         benettin.Calculate();

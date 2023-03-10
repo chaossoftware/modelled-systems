@@ -16,15 +16,15 @@ internal class SystemOut : Routine
     private SolverBase solver;
     private readonly bool _binaryOutput;
 
-    public SystemOut(string outDir, SystemParameters sysParams, bool binaryOutput) : base (outDir, sysParams)
+    public SystemOut(string outDir, SystemCfg sysParams, bool binaryOutput) : base (outDir, sysParams)
     {
         _binaryOutput = binaryOutput;
-        _eqStep = SysParameters.Step;
+        _eqStep = SysConfig.Solver.Dt;
 
-        equations = GetSystemEquations(SysParameters.Defaults);
+        equations = GetSystemEquations(SysConfig.ParamsValues);
         _eqN = equations.Count;
         
-        _totalIterations = (long)(SysParameters.ModellingTime / _eqStep) + 1;
+        _totalIterations = (long)(SysConfig.Solver.ModellingTime / _eqStep) + 1;
 
         outArray = new double[_eqN][];
         
@@ -33,7 +33,7 @@ internal class SystemOut : Routine
             outArray[i] = new double[_totalIterations];
         }
 
-        solver = GetSolver(sysParams.Solver, equations, _eqStep);
+        solver = GetSolver(equations);
     }
 
     public override void Run()
@@ -85,7 +85,7 @@ internal class SystemOut : Routine
         {
             var plt = GetPlot("x", "y");
             plt.AddScatterPoints(xt, yt, Color.Blue, 1);
-            plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_attractor.png"));
+            plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + "_attractor.png"));
         }
         
         if (_binaryOutput)
@@ -98,6 +98,6 @@ internal class SystemOut : Routine
         }
 
         Model3D.Create3daModelFile(fileNameStart + ".3da", xt, yt, zt);
-        Sound.CreateWavFile(fileNameStart + ".wav", yt);
+        Sound.CreateWavFile(fileNameStart + ".wav", xt);
     }
 }

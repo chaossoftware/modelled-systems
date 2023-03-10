@@ -1,7 +1,7 @@
-<config>
+<Config>
 
   <ModelingTask>
-    <TargetSystem>logistic</TargetSystem>
+    <System>logistic</System>
     <Action>signal</Action>
     <Orthogonalization type="mgs" interval="1"/>
     <!-- cgs , mgs , hh -->
@@ -11,14 +11,14 @@
   </ModelingTask>
 
   <Routines>
-    <Routine name="signal" params=""/>
-    <Routine name="bifurcation" params="0|1000"/>
-    <Routine name="lle" params=""/>
-    <Routine name="lle_sync" iterations="5000" convergeRatio="0.0001" params="5000|0.0001"/>
-    <Routine name="lle_by_param" paramIndex="0" params="0|400"/>
-    <Routine name="le_spec" params=""/>
-    <Routine name="le_spec_map" param1Index="0" param2Index="1" params="0|1|400"/>
-    <Routine name="lyapunov_fractal" paramIndex="0" sequence="AB" params="0|400|AB"/>
+    <Routine name="signal"/>
+    <Routine name="bifurcation" paramIndex="0" iterations="1000"/>
+    <Routine name="lle"/>
+    <Routine name="lle_sync" convergeRatio="0.0001" iterations="5000"/>
+    <Routine name="lle_by_param" paramIndex="0" iterations="400"/>
+    <Routine name="le_spec"/>
+    <Routine name="le_spec_map" param1Index="0" param2Index="1" iterations="400"/>
+    <Routine name="lyapunov_fractal" paramIndex="0" sequence="AB" iterations="400"/>
   </Routines>
 
   <Systems>
@@ -161,4 +161,4 @@
 
   </Systems>
 
-</config>
+</Config>

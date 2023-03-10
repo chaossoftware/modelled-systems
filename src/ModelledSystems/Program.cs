@@ -1,27 +1,29 @@
 ﻿using ModelledSystems.Routines;
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Xml.Serialization;
 
 namespace ModelledSystems
 {
     internal class Program
     {
-        private readonly Parameters _params;
+        private const string ConfigFile = "systems_config.xml";
+        private readonly Config _config;
         private readonly string _outDir;
-        private readonly Size _size;
 
         public Program()
         {
-            _params = new Parameters();
-            _outDir = Path.Combine(_params.OutDir, _params.System);
-            _size = _params.PicSize;
+            XmlSerializer serializer = new XmlSerializer(typeof(Config));
+            using FileStream fs = new FileStream(ConfigFile, FileMode.Open);
+            _config = (Config)serializer.Deserialize(fs);
+            _outDir = Path.Combine(_config.Task.Out.Dir, _config.Task.System);
         }
-
+        
         public static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
@@ -44,7 +46,7 @@ namespace ModelledSystems
                 Directory.CreateDirectory(_outDir);
             }
 
-            Console.Title = _params.System + ": " + _params.Action;
+            Console.Title = _config.Task.System + ": " + _config.Task.Action;
         }
 
         private void PerformAction()
@@ -62,49 +64,53 @@ namespace ModelledSystems
         private Routine GetRoutine()
         {
             Routine routine;
-            switch (_params.Action.ToLower())
+            double[] sysParams = _config.System.Params.Select(p => p.Value).ToArray();
+
+            switch (_config.Task.Action.ToLowerInvariant())
             {
                 case "signal":
-                    routine = new SystemOut(_outDir, _params.SystemParameters, _params.BinOutput);
-                    break;
-                case "le_spec":
-                    routine = new BenettinSpectrum(_outDir, _params.SystemParameters, _params.Orthogonalization, _params.Iterations);
-                    break;
-                case "lle":
-                    routine = new BenettinLLE(_outDir, _params.SystemParameters);
-                    break;
-                case "lle_by_param":
-                    int paramIndexLle = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    int paramIterations = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
-                    routine = new BenettinLLEParam(_outDir, _params.SystemParameters, paramIndexLle, paramIterations);
-                    break;
-                case "le_spec_map":
-                    int mapX = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    int mapY = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
-                    int mapParamIterations = Convert.ToInt32(_params.ActionParams.Split('|')[2]);
-                    routine = new LesMap(_outDir, _params.SystemParameters, mapX, mapY, mapParamIterations);
+                    routine = new SystemOut(_outDir, _config.System, _config.Task.Out.BinOutput);
                     break;
                 case "bifurcation":
-                    int paramIndex = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    int paramIterationsB = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
-                    routine = new Bifurcation(_outDir, _params.SystemParameters, paramIndex, paramIterationsB);
+                    routine = new Bifurcation(_outDir, _config.System, 
+                        _config.Routine.GetInt("paramIndex"), 
+                        _config.Routine.GetInt("iterations"));
+                    break;
+                case "lle":
+                    routine = new BenettinLLE(_outDir, _config.System);
                     break;
                 case "lle_sync":
-                    int p = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    double pstep = Convert.ToDouble(_params.ActionParams.Split('|')[1]);
-                    routine = new SynchronizationLLE(_outDir, _params.SystemParameters, p, pstep);
+                    routine = new SynchronizationLLE(_outDir, _config.System, 
+                        _config.Routine.GetInt("iterations"), 
+                        _config.Routine.GetDouble("convergeRatio"));
+                    break;
+                case "lle_by_param":
+                    routine = new BenettinLLEParam(_outDir, _config.System, 
+                        _config.Routine.GetInt("paramIndex"), 
+                        _config.Routine.GetInt("iterations"));
+                    break;
+                case "le_spec":
+                    routine = new BenettinSpectrum(_outDir, _config.System, _config.Task.Orthogonalization);
+                    break;
+                case "le_spec_map":
+                    routine = new LesMap(_outDir, _config.System, 
+                        _config.Routine.GetInt("param1Index"), 
+                        _config.Routine.GetInt("param2Index"), 
+                        _config.Routine.GetInt("iterations"),
+                        _config.Task.Orthogonalization);
                     break;
                 case "lyapunov_fractal":
-                    int lefParamIndex = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    int lefIterations = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
-                    string sequence = _params.ActionParams.Split('|')[2];
-                    routine = new LeFractal(_outDir, _params.SystemParameters, lefParamIndex, lefIterations, sequence);
+                    routine = new LeFractal(_outDir, _config.System, 
+                        _config.Routine.GetInt("paramIndex"), 
+                        _config.Routine.GetInt("iterations"), 
+                        _config.Routine.GetString("sequence"));
                     break;
                 default:
                     return null;
             }
 
-            routine.Size = _size;
+            routine.PicWidth = _config.Task.Out.PicWidth;
+            routine.PicHeight = _config.Task.Out.PicHeight;
             return routine;
         }
     }

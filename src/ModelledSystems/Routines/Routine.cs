@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Drawing;
 using ChaosSoft.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Orthogonalization;
 using ModelledSystems.Equations;
 using ModelledSystems.Equations.Linearized;
 using ScottPlot;
@@ -9,23 +9,25 @@ namespace ModelledSystems.Routines;
 
 abstract class Routine
 {
-    protected Routine(string outDir, SystemParameters parameters)
+    protected Routine(string outDir, SystemCfg sysConfig)
     {
         OutDir = outDir;
-        SysParameters = parameters;
+        SysConfig = sysConfig;
     }
 
     protected string OutDir { get; set; }
 
-    protected SystemParameters SysParameters { get; set; }
+    protected SystemCfg SysConfig { get; set; }
 
-    public Size Size { get; set; }
+    public int PicWidth { get; set; }
+
+    public int PicHeight { get; set; }
 
     public abstract void Run();
 
     protected Plot GetPlot(string xLabel, string yLabel)
     {
-        Plot plot = new Plot(Size.Width, Size.Height);
+        Plot plot = new Plot(PicWidth, PicHeight);
 
         plot.XAxis.LabelStyle(fontSize: 12);
         plot.YAxis.LabelStyle(fontSize: 12);
@@ -36,124 +38,81 @@ abstract class Routine
         return plot;
     }
 
-    protected SystemBase GetSystemEquations(double[] vars)
+    protected SystemBase GetSystemEquations(double[] sysParams)
     {
-        SystemBase eq;
-        switch (SysParameters.SystemName.ToLower())
+        SystemBase eq = SysConfig.Name.ToLowerInvariant() switch
         {
-            case "henon":
-                eq = new HenonMap();
-                break;
-            case "henon_generalized":
-                eq = new GeneralizedHenonMap();
-                break;
-            case "logistic":
-                eq = new LogisticMap();
-                break;
-            case "tinkerbell":
-                eq = new TinkerbellMap();
-                break;
-            case "lorenz":
-                eq = new LorenzAttractor();
-                break;
-            case "rossler":
-                eq = new Rossler();
-                break;
-            case "thomas":
-                eq = new ThomasAttractor();
-                break;
-            case "halvorsen":
-                eq = new HalvorsenAttractor();
-                break;
-            case "qi_chen":
-                eq = new QiChenAttractor();
-                break;
-            case "chua":
-                eq = new ChuaCircuit();
-                break;
-            case "stankevich":
-                eq = new Stankevich();
-                break;
-            case "charo":
-                eq = new CharoAttractor();
-                break;
-            case "henon_heiles":
-                eq = new HenonHeiles();
-                break;
-            case "anischenko_nikolaev":
-                eq = new AnishchenkoNikolaev();
-                break;
-            case "klein_baier":
-                eq = new KleinBaier();
-                break;
-            default:
-                throw new ArgumentException($"No such system: {SysParameters.SystemName}");
-        }
+            "henon" => new HenonMap(),
+            "henon_generalized" => new GeneralizedHenonMap(),
+            "logistic" => new LogisticMap(),
+            "tinkerbell" => new TinkerbellMap(),
+            "lorenz" => new LorenzAttractor(),
+            "rossler" => new Rossler(),
+            "thomas" => new ThomasAttractor(),
+            "halvorsen" => new HalvorsenAttractor(),
+            "qi_chen" => new QiChenAttractor(),
+            "chua" => new ChuaCircuit(),
+            "stankevich" => new Stankevich(),
+            "charo" => new CharoAttractor(),
+            "henon_heiles" => new HenonHeiles(),
+            "anischenko_nikolaev" => new AnishchenkoNikolaev(),
+            "klein_baier" => new KleinBaier(),
+            _ => throw new ArgumentException($"No such system: {SysConfig.Name}"),
+        };
 
-        eq.SetParameters(vars);
+        eq.SetParameters(sysParams);
         return eq;
     }
 
-    protected SystemBase GetLinearizedSystemEquations(double[] vars)
+    protected SystemBase GetLinearizedSystemEquations(double[] sysParams)
     {
-        SystemBase eq;
-        switch (SysParameters.SystemName.ToLower())
+        SystemBase eq = SysConfig.Name.ToLowerInvariant() switch
         {
-            case "lorenz":
-                eq = new LorenzLinearized();
-                break;
-            case "rossler":
-                eq = new RosslerLinearized();
-                break;
-            case "henon":
-                eq = new HenonMapLinearized();
-                break;
-            case "henon_generalized":
-                eq = new GeneralizedHenonLinearized();
-                break;
-            case "logistic":
-                eq = new LogisticLinearized();
-                break;
-            case "tinkerbell":
-                eq = new TinkerbellLinearized();
-                break;
-            case "henon_heiles":
-                eq = new HenonHeilesLinearized();
-                break;
-            case "klein_baier":
-                eq = new KleinBaierLinearized();
-                break;
-            default:
-                throw new ArgumentException($"No such system: {SysParameters.SystemName}");
-        }
+            "lorenz" => new LorenzLinearized(),
+            "rossler" => new RosslerLinearized(),
+            "henon" => new HenonMapLinearized(),
+            "henon_generalized" => new GeneralizedHenonLinearized(),
+            "logistic" => new LogisticLinearized(),
+            "tinkerbell" => new TinkerbellLinearized(),
+            "henon_heiles" => new HenonHeilesLinearized(),
+            "klein_baier" => new KleinBaierLinearized(),
+            _ => throw new ArgumentException($"No such system: {SysConfig.Name}"),
+        };
 
-        eq.SetParameters(vars);
+        eq.SetParameters(sysParams);
         return eq;
     }
 
-    public SolverBase GetSolver(string name, SystemBase eq, double step)
+    public SolverBase GetSolver(SystemBase eq)
     {
-        switch(name.ToLowerInvariant())
+        double dt = SysConfig.Solver.Dt;
+
+        return SysConfig.Solver.Name.ToLowerInvariant() switch
         {
-            case "discrete":
-                return new DiscreteSolver(eq, step);
-            case "rk5":
-                return new RK5(eq, step);
-            default:
-                return new RK4(eq, step);
-        }
+            "discrete" => new DiscreteSolver(eq, dt),
+            "rk5" => new RK5(eq, dt),
+            _ => new RK4(eq, dt),
+        };
     }
 
-    public Type GetSolverType(string name)
+    public Type GetSolverType()
     {
-        switch (name.ToLowerInvariant())
+        return SysConfig.Solver.Name.ToLowerInvariant() switch
         {
-            case "discrete":
-                return typeof(DiscreteSolver);
-            case "rk5":
-                return typeof(RK5);
-            default:
-                return typeof(RK4);
-        }
+            "discrete" => typeof(DiscreteSolver),
+            "rk5" => typeof(RK5),
+            _ => typeof(RK4),
+        };
+    }
+
+    public OrthogonalizationBase GetOrthogonalization(string ortType, int equationsCount)
+    {
+        return ortType.ToLowerInvariant() switch
+        {
+            "mgs" => new ModifiedGrammSchmidt(equationsCount),
+            "cgs" => new ClassicGrammSchmidt(equationsCount),
+            "hh" => new HouseholderTransformation(equationsCount),
+            _ => throw new ArgumentException($"No such system: {SysConfig.Name}"),
+        };
     }
 }

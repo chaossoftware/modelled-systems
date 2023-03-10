@@ -21,23 +21,26 @@ internal class LesMap : Routine
     private readonly int _iterations;
     private readonly double _eqStep;
 
-    private readonly Parameter xParameter, yParameter;
+    private readonly SysParamCfg xParameter, yParameter;
 
-    public LesMap(string outDir, SystemParameters systemParameters, int xParamIndex, int yParamIndex, int paramIterations) 
-        : base(outDir, systemParameters)
+    private readonly string _ortType;
+    private readonly int _irate;
+
+    public LesMap(string outDir, SystemCfg sysConfig, int xParamIndex, int yParamIndex, int paramIterations, OrthogonalizationCfg orthogonalization) 
+        : base(outDir, sysConfig)
     {
         _xParamIndex = xParamIndex;
         _yParamIndex = yParamIndex;
         _iterations = paramIterations;
-        _eqStep = SysParameters.Step;
+        _eqStep = SysConfig.Solver.Dt;
 
-        xParameter = SysParameters.ListParameters[xParamIndex];
-        yParameter = SysParameters.ListParameters[yParamIndex];
+        xParameter = SysConfig.Params[xParamIndex];
+        yParameter = SysConfig.Params[yParamIndex];
 
-        xBegin = xParameter.Start;
-        yBegin = yParameter.Start;
-        xEnd = xParameter.End;
-        yEnd = yParameter.End;
+        xBegin = xParameter.From;
+        yBegin = yParameter.From;
+        xEnd = xParameter.To;
+        yEnd = yParameter.To;
         xStep = (xEnd - xBegin) / _iterations;
         yStep = (yEnd - yBegin) / _iterations;
 
@@ -47,6 +50,9 @@ internal class LesMap : Routine
 
         _arr = new double[_iterations, _iterations];
         Matrix.FillWith(_arr, -1);
+
+        _ortType = orthogonalization.Type;
+        _irate = orthogonalization.Interval;
 
         _arrPvc = new double[_iterations, _iterations];
     }
@@ -84,10 +90,10 @@ internal class LesMap : Routine
 
         string fName = $"_lyapunov_map_{xParameter.Name}_{yParameter.Name}.png";
 
-        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + fName));
+        plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + fName));
     }
 
-    public void Func(int z /*double xparam, double yParam, int x, int y*/)
+    public void Func(int z)
     {
         long totIter;
         double[] R;
@@ -95,18 +101,18 @@ internal class LesMap : Routine
         int x = z / _iterations;
         int y = z % _iterations;
 
-        double[] vars = new double[SysParameters.Defaults.Length];
-        Array.Copy(SysParameters.Defaults, vars, vars.Length);
-        vars = SysParameters.Defaults;
+        double[] vars = new double[SysConfig.ParamsValues.Length];
+        Array.Copy(SysConfig.ParamsValues, vars, vars.Length);
+        
         vars[_xParamIndex] = xBegin + xStep * x;
         vars[_yParamIndex] = yBegin + yStep * y;
 
         SystemBase equations = GetLinearizedSystemEquations(vars);
 
-        var solver = GetSolver(SysParameters.Solver, equations, _eqStep);
+        var solver = GetSolver(equations);
 
-        totIter = (long)(SysParameters.ModellingTime / solver.Dt);
-        OrthogonalizationBase ort = new ModifiedGrammSchmidt(equations.Count);
+        totIter = (long)(SysConfig.Solver.ModellingTime / solver.Dt);
+        OrthogonalizationBase ort = GetOrthogonalization(_ortType, equations.Count);
         LeSpecBenettin lyap = new LeSpecBenettin(equations.Count);
 
         R = new double[equations.Count];
@@ -114,6 +120,12 @@ internal class LesMap : Routine
         for (int i = 0; i < totIter; i++)
         {
             solver.NexStep();
+
+            for (int j = 0; j < _irate; j++)
+            {
+                solver.NexStep();
+            }
+
             ort.Perform(solver.Solution, R);
             lyap.CalculateLyapunovSpectrum(R, solver.Time);
             totIter--;

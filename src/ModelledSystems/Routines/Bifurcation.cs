@@ -17,16 +17,16 @@ internal class Bifurcation : Routine
     private readonly DataSeries _solutionSeries;
     private readonly int _paramIndex;
     private readonly int _lastIter = 100;
-    private readonly Parameter _param;
+    private readonly SysParamCfg _param;
     private readonly double _step;
 
-    public Bifurcation(string outDir, SystemParameters systemParameters, int paramIndex, int iterations) : base(outDir, systemParameters)
+    public Bifurcation(string outDir, SystemCfg sysConfig, int paramIndex, int iterations) : base(outDir, sysConfig)
     {
         _solutionSeries = new DataSeries();
         _paramIndex = paramIndex;
-        _param = SysParameters.ListParameters[_paramIndex];
+        _param = SysConfig.Params[_paramIndex];
         _totalIterations = iterations;
-        _step = (_param.End - _param.Start) / _totalIterations;
+        _step = (_param.To - _param.From) / _totalIterations;
         _dataPoints = new ConcurrentBag<DataPoint>();
         _progress = new TaskProgress(_totalIterations);
     }
@@ -35,29 +35,28 @@ internal class Bifurcation : Routine
     {
         Parallel.For(0, _totalIterations, i =>
         {
-            Func(_param.Start + _step * i);
+            Func(_param.From + _step * i);
         });
 
         _solutionSeries.DataPoints.AddRange(_dataPoints);
 
-        DataWriter.CreateDataFile(Path.Combine(OutDir, SysParameters.SystemName + "_data_bifur_" + _param.Name), _solutionSeries.ToString());
+        DataWriter.CreateDataFile(Path.Combine(OutDir, SysConfig.Name + "_data_bifur_" + _param.Name), _solutionSeries.ToString());
 
         var plt = GetPlot(_param.Name, "x");
         plt.AddScatterPoints(_solutionSeries.XValues, _solutionSeries.YValues, Color.Blue, 1);
-        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_bifur_" + _param.Name + ".png"));
+        plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + "_bifur_" + _param.Name + ".png"));
     }
 
 
     private void Func(double p)
     {
-        double[] vars;
-
-        vars = SysParameters.Defaults;
+        double[] vars = new double[SysConfig.ParamsValues.Length];
+        Array.Copy(SysConfig.ParamsValues, vars, vars.Length);
         vars[_paramIndex] = p;
 
         SystemBase eq = GetSystemEquations(vars);
 
-        var solver = GetSolver(SysParameters.Solver, eq, SysParameters.Step);
+        var solver = GetSolver(eq);
 
         for (int j = 0; j < _totalIterations; j++)
         {
