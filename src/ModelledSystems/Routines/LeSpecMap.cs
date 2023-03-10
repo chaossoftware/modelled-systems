@@ -9,7 +9,7 @@ using ChaosSoft.NumericalMethods.Orthogonalization;
 
 namespace ModelledSystems.Routines;
 
-internal class LesMap : Routine
+internal class LeSpecMap : Routine
 {
     private readonly double xBegin, yBegin, xStep, yStep, xEnd, yEnd;
     private readonly int _xParamIndex, _yParamIndex;
@@ -26,7 +26,7 @@ internal class LesMap : Routine
     private readonly string _ortType;
     private readonly int _irate;
 
-    public LesMap(string outDir, SystemCfg sysConfig, int xParamIndex, int yParamIndex, int paramIterations, OrthogonalizationCfg orthogonalization) 
+    public LeSpecMap(string outDir, SystemCfg sysConfig, int xParamIndex, int yParamIndex, int paramIterations, OrthogonalizationCfg orthogonalization) 
         : base(outDir, sysConfig)
     {
         _xParamIndex = xParamIndex;

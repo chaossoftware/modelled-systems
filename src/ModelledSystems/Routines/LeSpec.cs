@@ -8,7 +8,7 @@ using System.Text;
 
 namespace ModelledSystems.Routines;
 
-internal class BenettinSpectrum : Routine
+internal class LeSpec : Routine
 {
     private readonly long _iterations;
     private readonly int _eqCount;
@@ -25,7 +25,7 @@ internal class BenettinSpectrum : Routine
 
     private int j, i;            //counters 
 
-    public BenettinSpectrum(string outDir, SystemCfg sysConfig, OrthogonalizationCfg orthogonalization) : 
+    public LeSpec(string outDir, SystemCfg sysConfig, OrthogonalizationCfg orthogonalization) : 
         base (outDir, sysConfig)
     {
         _irate = orthogonalization.Interval;

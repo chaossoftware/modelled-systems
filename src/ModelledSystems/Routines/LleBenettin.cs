@@ -5,7 +5,7 @@ using System.IO;
 
 namespace ModelledSystems.Routines;
 
-class BenettinLLE : Routine
+class LleBenettin : Routine
 {
     private readonly double _eqStep;
     private string fileNameStart;
@@ -16,7 +16,7 @@ class BenettinLLE : Routine
 
     private long TotIter;
 
-    public BenettinLLE(string outDir, SystemCfg sysConfig) : base (outDir, sysConfig)
+    public LleBenettin(string outDir, SystemCfg sysConfig) : base (outDir, sysConfig)
     {
         _equations = GetSystemEquations(SysConfig.ParamsValues);
         _solverType = GetSolverType();
@@ -28,7 +28,7 @@ class BenettinLLE : Routine
 
     public override void Run()
     {
-        LleBenettin benettin = new LleBenettin(_equations, _solverType, _eqStep, TotIter);
+        ChaosSoft.NumericalMethods.Lyapunov.LleBenettin benettin = new ChaosSoft.NumericalMethods.Lyapunov.LleBenettin(_equations, _solverType, _eqStep, TotIter);
         benettin.Calculate();
         //WriteResults();
         Console.WriteLine(benettin.ToString());

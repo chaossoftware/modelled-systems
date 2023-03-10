@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ModelledSystems.Routines;
 
-internal class BenettinLLEParam : Routine
+internal class LleParam : Routine
 {
     private readonly TaskProgress _progress;
     private readonly DataSeries _lleSeries;
@@ -20,7 +20,7 @@ internal class BenettinLLEParam : Routine
     private readonly SysParamCfg _param;
     private readonly double _step;
 
-    public BenettinLLEParam(string outDir, SystemCfg sysConfig, int paramIndex, int iterations) : base(outDir, sysConfig)
+    public LleParam(string outDir, SystemCfg sysConfig, int paramIndex, int iterations) : base(outDir, sysConfig)
     {
         _lleSeries = new DataSeries();
         _paramIndex = paramIndex;
@@ -60,7 +60,7 @@ internal class BenettinLLEParam : Routine
         double eqStep = SysConfig.Solver.Dt;
         long totIter = (long)(SysConfig.Solver.ModellingTime / eqStep);
 
-        LleBenettin benettin = new LleBenettin(equations, solverType, eqStep, totIter);
+        ChaosSoft.NumericalMethods.Lyapunov.LleBenettin benettin = new ChaosSoft.NumericalMethods.Lyapunov.LleBenettin(equations, solverType, eqStep, totIter);
         benettin.Calculate();
 
         _dataPoints.Add(new DataPoint(p, benettin.Result));

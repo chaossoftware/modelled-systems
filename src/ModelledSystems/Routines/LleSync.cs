@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ModelledSystems.Routines;
 
-internal class SynchronizationLLE : Routine
+internal class LleSync : Routine
 {
     private readonly TaskProgress _progress;
 
@@ -20,7 +20,7 @@ internal class SynchronizationLLE : Routine
     private readonly int _lastIter = 100;
     private readonly ConcurrentBag<DataPoint> _dataPoints;
 
-    public SynchronizationLLE(string outDir, SystemCfg sysConfig, int pIter, double pstep) : base (outDir, sysConfig)
+    public LleSync(string outDir, SystemCfg sysConfig, int pIter, double pstep) : base (outDir, sysConfig)
     {
         _syncSeries = new DataSeries();
         _pIter = pIter;

@@ -77,23 +77,23 @@ namespace ModelledSystems
                         _config.Routine.GetInt("iterations"));
                     break;
                 case "lle":
-                    routine = new BenettinLLE(_outDir, _config.System);
+                    routine = new LleBenettin(_outDir, _config.System);
                     break;
                 case "lle_sync":
-                    routine = new SynchronizationLLE(_outDir, _config.System, 
+                    routine = new LleSync(_outDir, _config.System, 
                         _config.Routine.GetInt("iterations"), 
                         _config.Routine.GetDouble("convergeRatio"));
                     break;
                 case "lle_by_param":
-                    routine = new BenettinLLEParam(_outDir, _config.System, 
+                    routine = new LleParam(_outDir, _config.System, 
                         _config.Routine.GetInt("paramIndex"), 
                         _config.Routine.GetInt("iterations"));
                     break;
                 case "le_spec":
-                    routine = new BenettinSpectrum(_outDir, _config.System, _config.Task.Orthogonalization);
+                    routine = new LeSpec(_outDir, _config.System, _config.Task.Orthogonalization);
                     break;
                 case "le_spec_map":
-                    routine = new LesMap(_outDir, _config.System, 
+                    routine = new LeSpecMap(_outDir, _config.System, 
                         _config.Routine.GetInt("param1Index"), 
                         _config.Routine.GetInt("param2Index"), 
                         _config.Routine.GetInt("iterations"),

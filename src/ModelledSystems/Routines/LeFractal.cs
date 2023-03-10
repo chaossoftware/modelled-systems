@@ -85,7 +85,7 @@ internal class LeFractal : Routine
         double eqStep = SysConfig.Solver.Dt;
         long totIter = (long)(SysConfig.Solver.ModellingTime / eqStep);
 
-        LleBenettin benettin = new LleBenettin(equations, solverType, eqStep, totIter);
+        ChaosSoft.NumericalMethods.Lyapunov.LleBenettin benettin = new ChaosSoft.NumericalMethods.Lyapunov.LleBenettin(equations, solverType, eqStep, totIter);
 
         // Synthetically need to make different initial conditions (solvers are not accessible)
         SolverBase solver1 = benettin.GetType().GetField("_solver1", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(benettin) as SolverBase;
