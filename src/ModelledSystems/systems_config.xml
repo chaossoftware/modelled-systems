@@ -18,7 +18,7 @@
     <Routine name="lle_by_param" paramIndex="0" iterations="400"/>
     <Routine name="le_spec"/>
     <Routine name="le_spec_map" param1Index="0" param2Index="1" iterations="400"/>
-    <Routine name="lyapunov_fractal" paramIndex="0" sequence="AB" iterations="400"/>
+    <Routine name="lyap_fractal" paramIndex="0" sequence="AB" iterations="400"/>
   </Routines>
 
   <Systems>

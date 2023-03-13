@@ -4,7 +4,7 @@ using ChaosSoft.NumericalMethods.Equations;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
-using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ModelledSystems.Routines;
@@ -14,19 +14,20 @@ internal class Bifurcation : Routine
     private readonly TaskProgress _progress;
     private readonly ConcurrentBag<DataPoint> _dataPoints;
     private readonly int _totalIterations;
-    private readonly DataSeries _solutionSeries;
-    private readonly int _paramIndex;
+    private readonly DataSeries _solutions;
+    private readonly int _drivingParamIndex;
     private readonly int _lastIter = 100;
     private readonly SysParamCfg _param;
-    private readonly double _step;
+    private readonly double _paramStep;
 
-    public Bifurcation(string outDir, SystemCfg sysConfig, int paramIndex, int iterations) : base(outDir, sysConfig)
+    public Bifurcation(string outDir, SystemCfg sysConfig, int paramIndex, int iterations) 
+        : base(outDir, sysConfig)
     {
-        _solutionSeries = new DataSeries();
-        _paramIndex = paramIndex;
-        _param = SysConfig.Params[_paramIndex];
+        _solutions = new DataSeries();
+        _drivingParamIndex = paramIndex;
+        _param = sysConfig.Params[_drivingParamIndex];
         _totalIterations = iterations;
-        _step = (_param.To - _param.From) / _totalIterations;
+        _paramStep = (_param.To - _param.From) / _totalIterations;
         _dataPoints = new ConcurrentBag<DataPoint>();
         _progress = new TaskProgress(_totalIterations);
     }
@@ -35,28 +36,25 @@ internal class Bifurcation : Routine
     {
         Parallel.For(0, _totalIterations, i =>
         {
-            Func(_param.From + _step * i);
+            SolveEquationsFor(_param.From + _paramStep * i);
         });
 
-        _solutionSeries.DataPoints.AddRange(_dataPoints);
+        _solutions.DataPoints.AddRange(_dataPoints);
 
-        DataWriter.CreateDataFile(Path.Combine(OutDir, SysConfig.Name + "_data_bifur_" + _param.Name), _solutionSeries.ToString());
+        DataWriter.CreateDataFile(FileNameBase + "_data_bifur_" + _param.Name, _solutions.ToString());
 
         var plt = GetPlot(_param.Name, "x");
-        plt.AddScatterPoints(_solutionSeries.XValues, _solutionSeries.YValues, Color.Blue, 1);
-        plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + "_bifur_" + _param.Name + ".png"));
+        plt.AddScatterPoints(_solutions.XValues, _solutions.YValues, Color.Blue, 1);
+        plt.SaveFig(FileNameBase + $"_bifur_{_param.Name}.png");
     }
 
-
-    private void Func(double p)
+    private void SolveEquationsFor(double paramValue)
     {
-        double[] vars = new double[SysConfig.ParamsValues.Length];
-        Array.Copy(SysConfig.ParamsValues, vars, vars.Length);
-        vars[_paramIndex] = p;
+        double[] vars = SysConfig.ParamsValues.ToArray();
+        vars[_drivingParamIndex] = paramValue;
 
         SystemBase eq = GetSystemEquations(vars);
-
-        var solver = GetSolver(eq);
+        SolverBase solver = GetSolver(eq);
 
         for (int j = 0; j < _totalIterations; j++)
         {
@@ -68,7 +66,7 @@ internal class Bifurcation : Routine
 
                 if (!double.IsInfinity(rez) && !double.IsNaN(rez) && Math.Abs(rez) < 1000)
                 {
-                    _dataPoints.Add(new DataPoint(p, rez));
+                    _dataPoints.Add(new DataPoint(paramValue, rez));
                 }
             }
         }

@@ -1,10 +1,9 @@
 ﻿using System;
-using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using ChaosSoft.Core.DataUtils;
 using ChaosSoft.NumericalMethods.Equations;
-using ChaosSoft.NumericalMethods.Lyapunov;
 
 namespace ModelledSystems.Routines;
 
@@ -53,7 +52,6 @@ internal class LeFractal : Routine
         hm.Smooth = true;
         plt.Margins(0, 0);
 
-
         //double[] ticks = Arrays.GenerateUniformArray(maxPositiveLeIndex + 1, minLeIndex, 1d);
 
         //cb.SetTicks(
@@ -67,7 +65,7 @@ internal class LeFractal : Routine
         plt.XTicks(positions, labels);
         plt.YTicks(positions, labels);
 
-        plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + "_lyapunov_fractal.png"));
+        plt.SaveFig(FileNameBase + "_lyapunov_fractal.png");
     }
 
     public void Func(int z)
@@ -77,8 +75,8 @@ internal class LeFractal : Routine
 
         double firstValue = _parameter.From + x * _step;
         double secondValue = _parameter.From + y * _step;
-        double[] vars = new double[SysConfig.ParamsValues.Length];
-        Array.Copy(SysConfig.ParamsValues, vars, vars.Length);
+
+        double[] vars = SysConfig.ParamsValues.ToArray();
 
         SystemBase equations = GetSystemEquations(vars);
         Type solverType = GetSolverType();

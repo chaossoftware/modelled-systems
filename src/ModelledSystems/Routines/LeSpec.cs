@@ -3,7 +3,6 @@ using ChaosSoft.NumericalMethods.Equations;
 using ChaosSoft.NumericalMethods.Lyapunov;
 using ChaosSoft.NumericalMethods.Orthogonalization;
 using System;
-using System.IO;
 using System.Text;
 
 namespace ModelledSystems.Routines;
@@ -76,10 +75,8 @@ internal class LeSpec : Routine
         Console.WriteLine($"Eks = {Format.General(StochasticProperties.KSEntropy(_leSpec.Result), 5)}");
         Console.WriteLine($"PVC = {Format.General(StochasticProperties.PhaseVolumeContractionSpeed(_leSpec.Result), 5)}");
 
-        string fileNameStart = Path.Combine(OutDir, _equations.ToFileName());
+        DataWriter.CreateDataFile(FileNameBase + ".le", _leSpec.Result.ToString());
 
-        DataWriter.CreateDataFile(fileNameStart + ".le", _leSpec.Result.ToString());
-        
         //double t = 0;
         //StringBuilder output = new StringBuilder();
 
@@ -97,6 +94,6 @@ internal class LeSpec : Routine
         //    t += _dt;
         //}
 
-        //DataWriter.CreateDataFile(SysConfig.Name + "_inTime.le", output.ToString());
+        //DataWriter.CreateDataFile(FileNameBase + "_inTime.le", output.ToString());
     }
 }

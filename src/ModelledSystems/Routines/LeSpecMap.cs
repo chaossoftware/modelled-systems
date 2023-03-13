@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using ChaosSoft.Core.DataUtils;
 using ChaosSoft.NumericalMethods.Equations;
@@ -19,9 +17,8 @@ internal class LeSpecMap : Routine
     private readonly TaskProgress _progress;
     
     private readonly int _iterations;
-    private readonly double _eqStep;
 
-    private readonly SysParamCfg xParameter, yParameter;
+    private readonly SysParamCfg _xParam, _yParam;
 
     private readonly string _ortType;
     private readonly int _irate;
@@ -32,21 +29,18 @@ internal class LeSpecMap : Routine
         _xParamIndex = xParamIndex;
         _yParamIndex = yParamIndex;
         _iterations = paramIterations;
-        _eqStep = SysConfig.Solver.Dt;
 
-        xParameter = SysConfig.Params[xParamIndex];
-        yParameter = SysConfig.Params[yParamIndex];
+        _xParam = SysConfig.Params[xParamIndex];
+        _yParam = SysConfig.Params[yParamIndex];
 
-        xBegin = xParameter.From;
-        yBegin = yParameter.From;
-        xEnd = xParameter.To;
-        yEnd = yParameter.To;
+        xBegin = _xParam.From;
+        yBegin = _yParam.From;
+        xEnd = _xParam.To;
+        yEnd = _yParam.To;
         xStep = (xEnd - xBegin) / _iterations;
         yStep = (yEnd - yBegin) / _iterations;
 
-        var totalIterations = _iterations * _iterations;
-
-        _progress = new TaskProgress(totalIterations);
+        _progress = new TaskProgress(_iterations * _iterations);
 
         _arr = new double[_iterations, _iterations];
         Matrix.FillWith(_arr, -1);
@@ -65,7 +59,7 @@ internal class LeSpecMap : Routine
 
     private void GetImage()
     {
-        var plt = GetPlot(xParameter.Name, yParameter.Name);
+        var plt = GetPlot(_xParam.Name, _yParam.Name);
 
         int maxPositiveLeIndex = (int)Matrix.Max(_arr);
         int minLeIndex = (int)Matrix.Min(_arr);
@@ -88,9 +82,9 @@ internal class LeSpecMap : Routine
         plt.XTicks(new double[] { 0, _iterations }, new string[] { xBegin.ToString(), xEnd.ToString() });
         plt.YTicks(new double[] { 0, _iterations }, new string[] { yBegin.ToString(), yEnd.ToString() });
 
-        string fName = $"_lyapunov_map_{xParameter.Name}_{yParameter.Name}.png";
+        string fName = $"_lyapunov_map_{_xParam.Name}_{_yParam.Name}.png";
 
-        plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + fName));
+        plt.SaveFig(FileNameBase + fName);
     }
 
     public void Func(int z)
@@ -101,8 +95,7 @@ internal class LeSpecMap : Routine
         int x = z / _iterations;
         int y = z % _iterations;
 
-        double[] vars = new double[SysConfig.ParamsValues.Length];
-        Array.Copy(SysConfig.ParamsValues, vars, vars.Length);
+        double[] vars = SysConfig.ParamsValues.ToArray();
         
         vars[_xParamIndex] = xBegin + xStep * x;
         vars[_yParamIndex] = yBegin + yStep * y;
@@ -197,6 +190,5 @@ internal class LeSpecMap : Routine
                 _arr[y, x] += (_arrPvc[y, x] - mins[lec]) * coeffs[lec] - maxCoeff / 2;
             }
         }
-
     }
 }

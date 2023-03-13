@@ -77,7 +77,7 @@ namespace ModelledSystems
                         _config.Routine.GetInt("iterations"));
                     break;
                 case "lle":
-                    routine = new LleBenettin(_outDir, _config.System);
+                    routine = new Lle(_outDir, _config.System);
                     break;
                 case "lle_sync":
                     routine = new LleSync(_outDir, _config.System, 
@@ -99,7 +99,7 @@ namespace ModelledSystems
                         _config.Routine.GetInt("iterations"),
                         _config.Task.Orthogonalization);
                     break;
-                case "lyapunov_fractal":
+                case "lyap_fractal":
                     routine = new LeFractal(_outDir, _config.System, 
                         _config.Routine.GetInt("paramIndex"), 
                         _config.Routine.GetInt("iterations"), 

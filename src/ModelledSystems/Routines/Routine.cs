@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using ChaosSoft.NumericalMethods.Equations;
 using ChaosSoft.NumericalMethods.Orthogonalization;
 using ModelledSystems.Equations;
@@ -13,15 +14,18 @@ abstract class Routine
     {
         OutDir = outDir;
         SysConfig = sysConfig;
+        FileNameBase = Path.Combine(OutDir, SysConfig.Name);
     }
 
-    protected string OutDir { get; set; }
+    protected string OutDir { get; }
 
-    protected SystemCfg SysConfig { get; set; }
+    protected SystemCfg SysConfig { get; }
 
     public int PicWidth { get; set; }
 
     public int PicHeight { get; set; }
+
+    protected string FileNameBase { get; } 
 
     public abstract void Run();
 

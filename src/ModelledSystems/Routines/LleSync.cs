@@ -4,7 +4,6 @@ using ModelledSystems.Equations.Augmented;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace ModelledSystems.Routines;
@@ -46,7 +45,7 @@ internal class LleSync : Routine
         var plt = GetPlot("p", "Δ");
         plt.AddScatterPoints(_syncSeries.XValues, _syncSeries.YValues, Color.Blue, 1);
 
-        plt.SaveFig(Path.Combine(OutDir, SysConfig.Name + "_lyapunov_stefanski.png"));
+        plt.SaveFig(FileNameBase + "_lyapunov_stefanski.png");
 
         int k = _syncSeries.Length - 1;
         double rezY = _syncSeries.DataPoints[k].Y;
