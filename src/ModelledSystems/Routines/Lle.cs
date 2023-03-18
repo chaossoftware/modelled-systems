@@ -19,7 +19,7 @@ class Lle : Routine
         _equations = GetSystemEquations(SysConfig.ParamsValues);
         _solverType = GetSolverType();
         _eqStep = SysConfig.Solver.Dt;
-        TotIter = (long)(SysConfig.Solver.ModellingTime / _eqStep) * 1000;
+        TotIter = (long)(SysConfig.Solver.ModellingTime / _eqStep);
         //outArray = new double[TotIter];
     }
 
