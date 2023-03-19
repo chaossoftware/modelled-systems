@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ChaosSoft.Core.DataUtils;
 using ChaosSoft.NumericalMethods.Equations;
 using ChaosSoft.NumericalMethods.Lyapunov;
 using ChaosSoft.NumericalMethods.Orthogonalization;
+using ScottPlot.Drawing;
 
 namespace ModelledSystems.Routines;
 
@@ -63,21 +65,19 @@ internal class LeSpecMap : Routine
 
         int maxPositiveLeIndex = (int)Matrix.Max(_arr);
         int minLeIndex = (int)Matrix.Min(_arr);
-        MakeGradient(maxPositiveLeIndex);
-
-        var hm = plt.AddHeatmap(_arr, ScottPlot.Drawing.Colormap.Turbo, lockScales: false);
-        var cb = plt.AddColorbar(hm);
-        hm.Smooth = true;
+        
+        var cm = new Colormap(new LeSpecColormap(minLeIndex, maxPositiveLeIndex));
+        var hm = plt.AddHeatmap(_arr, cm, lockScales: false);
+        var cb = plt.AddColorbar(hm, 50);
         plt.Margins(0, 0);
 
-
-        double[] ticks = Vector.CreateUniform(maxPositiveLeIndex + 1, minLeIndex, 1d);
+        double[] ticks = Vector.CreateUniform(maxPositiveLeIndex + 1 - minLeIndex, minLeIndex, 1d);
 
         cb.SetTicks(
             ticks,
-            ticks.Select(t => t.ToString()).ToArray(), 
+            ticks.Select(t => t == -1 ? "X" : t.ToString()).ToArray(), 
             min: minLeIndex, 
-            max: maxPositiveLeIndex);
+            max: maxPositiveLeIndex + 1);
 
         plt.XTicks(new double[] { 0, _iterations }, new string[] { xBegin.ToString(), xEnd.ToString() });
         plt.YTicks(new double[] { 0, _iterations }, new string[] { yBegin.ToString(), yEnd.ToString() });
@@ -90,7 +90,7 @@ internal class LeSpecMap : Routine
     public void Func(int z)
     {
         long totIter;
-        double[] R;
+        double[] _rMatrix;
 
         int x = z / _iterations;
         int y = z % _iterations;
@@ -108,7 +108,7 @@ internal class LeSpecMap : Routine
         OrthogonalizationBase ort = GetOrthogonalization(_ortType, equations.Count);
         LeSpecBenettin lyap = new LeSpecBenettin(equations.Count);
 
-        R = new double[equations.Count];
+        _rMatrix = new double[equations.Count];
 
         for (int i = 0; i < totIter; i++)
         {
@@ -119,15 +119,24 @@ internal class LeSpecMap : Routine
                 solver.NexStep();
             }
 
-            ort.Perform(solver.Solution, R);
-            lyap.CalculateLyapunovSpectrum(R, solver.Time);
+            ort.Perform(solver.Solution, _rMatrix);
+            lyap.CalculateLyapunovSpectrum(_rMatrix, solver.Time);
+
+            if (_rMatrix.Any(v => double.IsNaN(v) || double.IsInfinity(v)))
+            {
+                Vector.FillWith(lyap.Result, double.NaN);
+                break;
+            }
+
             totIter--;
         }
 
-        int rez = lyap.Result.Count(l => l > 0);
+        int rez = lyap.Result.Any(e => double.IsNaN(e)) 
+            ? -1 
+            : lyap.Result.Count(l => l > 1e-4);
 
-            _arr[_iterations - 1 - y, x] = rez;
-            _arrPvc[_iterations - 1 - y, x] = StochasticProperties.PhaseVolumeContractionSpeed(lyap.Result);
+        _arr[_iterations - 1 - y, x] = rez;
+        _arrPvc[_iterations - 1 - y, x] = StochasticProperties.PhaseVolumeContractionSpeed(lyap.Result);
 
         _progress.Iterate();
     }
@@ -185,10 +194,46 @@ internal class LeSpecMap : Routine
                 {
                     continue;
                 }
-                
+
                 int lec = (int)_arr[y, x];
                 _arr[y, x] += (_arrPvc[y, x] - mins[lec]) * coeffs[lec] - maxCoeff / 2;
             }
         }
+    }
+}
+
+public class LeSpecColormap : IColormap
+{
+    private readonly int[] fullPalette =
+    {
+        16777215, // white
+        03394611, //green
+        00039423, //blue
+        16750899, //orange
+        16711935, //fuchsia
+    };
+
+    private readonly int[] rgb;
+
+    public LeSpecColormap(int minLeIndex, int positiveLeCount)
+    {
+        int[] tmp = fullPalette.Skip(minLeIndex + 1).Take(positiveLeCount + 1 - minLeIndex).ToArray();
+
+        rgb = new int[256];
+        int coeff = rgb.Length / tmp.Length;
+
+        for (int i = 0; i < rgb.Length; i++)
+        {
+            int ind = Math.Min(i / coeff, tmp.Length - 1);
+            rgb[i] = tmp[ind];
+        }
+    }
+
+    public string Name => "LeSpec";
+
+    public (byte r, byte g, byte b) GetRGB(byte value)
+    {
+        byte[] bytes = BitConverter.GetBytes(rgb[value]);
+        return (bytes[2], bytes[1], bytes[0]);
     }
 }

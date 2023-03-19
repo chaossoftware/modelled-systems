@@ -1,9 +1,10 @@
-﻿using ChaosSoft.Core.IO;
+﻿using ChaosSoft.Core.DataUtils;
+using ChaosSoft.Core.IO;
 using ChaosSoft.NumericalMethods.Equations;
 using ChaosSoft.NumericalMethods.Lyapunov;
 using ChaosSoft.NumericalMethods.Orthogonalization;
 using System;
-using System.Text;
+using System.Linq;
 
 namespace ModelledSystems.Routines;
 
@@ -55,6 +56,12 @@ internal class LeSpec : Routine
             _orthogonalization.Perform(_solver.Solution, _rMatrix);
 
             _leSpec.CalculateLyapunovSpectrum(_rMatrix, _solver.Time);
+
+            if (_rMatrix.Any(v => double.IsNaN(v) || double.IsInfinity(v)))
+            {
+                Vector.FillWith(_leSpec.Result, double.NaN);
+                break;
+            }
 
             //------------------- normalize and print exponent ------------
             //for (j = 0; j < _eqCount; j++)
