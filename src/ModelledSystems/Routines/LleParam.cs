@@ -1,16 +1,17 @@
 ﻿using ChaosSoft.Core.Data;
 using ChaosSoft.Core.IO;
-using ChaosSoft.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Ode;
 using ChaosSoft.NumericalMethods.Lyapunov;
-using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using ScottPlot;
+using ChaosSoft.NumericalMethods.Algebra;
 
 namespace ModelledSystems.Routines;
 
-internal class LleParam : Routine
+internal sealed class LleParam : Routine
 {
     private readonly TaskProgress _progress;
     private readonly DataSeries _lleSeries;
@@ -20,7 +21,7 @@ internal class LleParam : Routine
     private readonly ConcurrentBag<DataPoint> _dataPoints;
 
     private readonly SysParamCfg _param;
-    private readonly Type _solverType;
+    private readonly SolverType _solverType;
     private readonly long _iterations;
     private readonly double _dt;
 
@@ -34,7 +35,7 @@ internal class LleParam : Routine
         _paramStep = (_param.To - _param.From) / _totalIterations;
         _dataPoints = new ConcurrentBag<DataPoint>();
         _progress = new TaskProgress(_totalIterations);
-        _solverType = GetSolverType();
+        _solverType = SysConfig.Solver.Type;
 
         _dt = sysConfig.Solver.Dt;
         _iterations = (long)(sysConfig.Solver.ModellingTime / _dt);
@@ -47,14 +48,14 @@ internal class LleParam : Routine
             CalculateLLeForParam(_param.From + _paramStep * i);
         });
 
-        _lleSeries.DataPoints.AddRange(_dataPoints);
+        _lleSeries.DataPoints.AddRange(_dataPoints.Where(dp => !Numbers.IsNanOrInfinity(dp.Y)));
         _lleSeries.DataPoints.Sort(delegate (DataPoint c1, DataPoint c2) { try { return c1.X.CompareTo(c2.X); } catch { } return 0; });
 
-        DataWriter.CreateDataFile(FileNameBase + "_data_lle_" + _param.Name, _lleSeries.ToString());
+        FileUtils.CreateDataFile(FileNameBase + "_data_lle_" + _param.Name, _lleSeries.ToString());
 
-        var plt = GetPlot(_param.Name, "LLE");
-        plt.AddSignalXY(_lleSeries.XValues, _lleSeries.YValues, Color.Blue);
-        plt.SaveFig(FileNameBase + $"_lle_{_param.Name}.png");
+        Plot llePlot = GetPlot(_param.Name, "LLE");
+        llePlot.AddScatter(_lleSeries.XValues, _lleSeries.YValues, Color.Blue, markerSize: 0);
+        SavePlot(llePlot, FileNameBase + $"_lle_{_param.Name}.png");
     }
 
     private void CalculateLLeForParam(double paramValue)
@@ -62,8 +63,8 @@ internal class LleParam : Routine
         double[] vars = SysConfig.ParamsValues.ToArray();
         vars[_drivingParamIndex] = paramValue;
 
-        SystemBase equations = GetSystemEquations(vars);
-        LleBenettin benettin = new LleBenettin(equations, _solverType, _dt, _iterations);
+        IOdeSys equations = GetSystemEquations(vars);
+        LleBenettin benettin = new(equations, _solverType, GetInitialConditions(), _dt, _iterations);
         benettin.Calculate();
 
         _dataPoints.Add(new DataPoint(paramValue, benettin.Result));

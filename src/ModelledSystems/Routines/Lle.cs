@@ -1,35 +1,36 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.NumericalMethods.Ode;
 using ChaosSoft.NumericalMethods.Lyapunov;
-using System;
+using ChaosSoft.Core.Logging;
+using ChaosSoft.Core;
 
 namespace ModelledSystems.Routines;
 
-class Lle : Routine
+internal sealed class Lle : Routine
 {
     private readonly double _eqStep;
-    private readonly SystemBase _equations;
-    private readonly Type _solverType;
+    private readonly IOdeSys _equations;
+    private readonly SolverType _solverType;
+    private readonly long _totalIterations;
 
     //double[] outArray;
 
-    private long TotIter;
 
     public Lle(string outDir, SystemCfg sysConfig) : base (outDir, sysConfig)
     {
         _equations = GetSystemEquations(SysConfig.ParamsValues);
-        _solverType = GetSolverType();
+        _solverType = SysConfig.Solver.Type;
         _eqStep = SysConfig.Solver.Dt;
-        TotIter = (long)(SysConfig.Solver.ModellingTime / _eqStep);
+        _totalIterations = (long)(SysConfig.Solver.ModellingTime / _eqStep);
         //outArray = new double[TotIter];
     }
 
     public override void Run()
     {
-        LleBenettin benettin = new LleBenettin(_equations, _solverType, _eqStep, TotIter);
+        LleBenettin benettin = new(_equations, _solverType, GetInitialConditions(), _eqStep, _totalIterations);
         benettin.Calculate();
         //WriteResults();
-        Console.WriteLine(benettin.ToString());
-        Console.WriteLine("\nLLE = " + benettin.GetResultAsString());
+        Log.Info(benettin.ToString());
+        Log.Info("\nLLE = {0}", NumFormat.Format(benettin.Result, Constants.LeNumFormat));
     }
 
     private void WriteResults()

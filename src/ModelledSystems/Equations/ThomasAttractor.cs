@@ -1,4 +1,5 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Ode;
 using System;
 
 namespace ModelledSystems.Equations;
@@ -8,11 +9,9 @@ namespace ModelledSystems.Equations;
 /// <see href="https://en.wikipedia.org/wiki/Thomas%27_cyclically_symmetric_attractor">
 /// Thomas' cyclically symmetric attractor</see>.
 /// </summary>
-public class ThomasAttractor : SystemBase
-{
-    protected const int EqCount = 3;
-
-    private double x, y, z;
+public class ThomasAttractor : IOdeSys, IHasFileName, IHasParameters, IHasName
+{ 
+    private double b;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ThomasAttractor"/> class 
@@ -28,18 +27,18 @@ public class ThomasAttractor : SystemBase
     /// with specific system parameters values.
     /// </summary>
     /// <param name="b"></param>
-    public ThomasAttractor(double b) : base(EqCount)
+    public ThomasAttractor(double b)
     {
-        B = b;
+        this.b = b;
     }
 
-    public double B { get; private set; }
+    public int EqCount { get; } = 3;
 
-    public override string Name => "Thomas attractor";
+    public string Name { get; } = "Thomas attractor";
 
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
-        B = parameters[0];
+        b = parameters[0];
     }
 
     /// <summary>
@@ -49,35 +48,24 @@ public class ThomasAttractor : SystemBase
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[] derivs)
     {
-        x = current[0, 0];
-        y = current[0, 1];
-        z = current[0, 2];
+        double x = solution[0];
+        double y = solution[1];
+        double z = solution[2];
 
-        derivs[0, 0] = Math.Sin(y) - B * x;
-        derivs[0, 1] = Math.Sin(z) - B * y;
-        derivs[0, 2] = Math.Sin(x) - B * z;
-    }
-
-    /// <summary>
-    /// [1, 0, 1].
-    /// </summary>
-    /// <param name="current">current solution</param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        current[0, 0] = 1;
-        current[0, 1] = 0;
-        current[0, 2] = 1;
+        derivs[0] = Math.Sin(y) - b * x;
+        derivs[1] = Math.Sin(z) - b * y;
+        derivs[2] = Math.Sin(x) - b * z;
     }
 
     public override string ToString() =>
         string.Format(
             SysFormat.GetInfoTemplate(Name, "b"),
-            B);
+            b);
 
-    public override string ToFileName() =>
+    public string ToFileName() =>
         string.Format(
             SysFormat.GetFileTemplate("thomas", "b"),
-            B);
+            b);
 }

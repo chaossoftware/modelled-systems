@@ -1,4 +1,5 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Ode;
 
 namespace ModelledSystems.Equations;
 
@@ -6,11 +7,11 @@ namespace ModelledSystems.Equations;
 /// Equations system for 
 /// <see href="https://en.wikipedia.org/wiki/Rössler_attractor">Rössler attractor</see>.
 /// </summary>
-public class Rossler : SystemBase
+public class Rossler : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    protected const int EqCount = 3;
-
-    private double x, y, z;
+    protected double a;
+    protected double b;
+    protected double c;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Rossler"/> class 
@@ -28,26 +29,22 @@ public class Rossler : SystemBase
     /// <param name="a"></param>
     /// <param name="b"></param>
     /// <param name="c"></param>
-    public Rossler(double a, double b, double c) : base(EqCount)
+    public Rossler(double a, double b, double c)
     {
-        A = a;
-        B = b;
-        C = c;
+        this.a = a;
+        this.b = b;
+        this.c = c;
     }
 
-    public double A { get; private set; }
+    public int EqCount { get; } = 3;
 
-    public double B { get; private set; }
+    public string Name { get; } = "Rössler attractor";
 
-    public double C { get; private set; }
-
-    public override string Name => "Rössler attractor";
-
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
-        A = parameters[0];
-        B = parameters[1];
-        C = parameters[2];
+        a = parameters[0];
+        b = parameters[1];
+        c = parameters[2];
     }
 
     /// <summary>
@@ -57,36 +54,24 @@ public class Rossler : SystemBase
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[] derivs)
     {
-        x = current[0, 0];
-        y = current[0, 1];
-        z = current[0, 2];
+        double x = solution[0];
+        double y = solution[1];
+        double z = solution[2];
 
-        derivs[0, 0] = -y - z;
-        derivs[0, 1] = x + A * y;
-        derivs[0, 2] = B + z * (x - C);
-    }
-
-    /// <summary>
-    /// [0.01, 0.01, 0.01].
-    /// </summary>
-    /// <param name="current">current solution</param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        for (int i = 0; i < Count; i++)
-        {
-            current[0, i] = 0.01;
-        }
+        derivs[0] = -y - z;
+        derivs[1] = x + a * y;
+        derivs[2] = b + z * (x - c);
     }
 
     public override string ToString() =>
         string.Format(
             SysFormat.GetInfoTemplate(Name, "a", "b", "c"),
-            A, B, C);
+            a, b, c);
 
-    public override string ToFileName() =>
+    public string ToFileName() =>
         string.Format(
             SysFormat.GetFileTemplate("rossler", "a", "b", "c"),
-            A, B, C);
+            a, b, c);
 }

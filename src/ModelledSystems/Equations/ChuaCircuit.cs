@@ -1,4 +1,5 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Ode;
 using System;
 
 namespace ModelledSystems.Equations;
@@ -7,11 +8,13 @@ namespace ModelledSystems.Equations;
 /// Equations system for 
 /// <see href="https://en.wikipedia.org/wiki/Chua%27s_circuit">Chua circuit</see>.
 /// </summary>
-public class ChuaCircuit : SystemBase
+public class ChuaCircuit : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    protected const int EqCount = 3;
-
-    private double x, y, z;
+    private double a;
+    private double b;
+    private double c;
+    private double d;
+    private double e;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChuaCircuit"/> class 
@@ -31,34 +34,26 @@ public class ChuaCircuit : SystemBase
     /// <param name="c"></param>
     /// <param name="d"></param>
     /// <param name="e"></param>
-    public ChuaCircuit(double a, double b, double c, double d, double e) : base(EqCount)
+    public ChuaCircuit(double a, double b, double c, double d, double e)
     {
-        A = a;
-        B = b;
-        C = c;
-        D = d;
-        E = e;
+        this.a = a;
+        this.b = b;
+        this.c = c;
+        this.d = d;
+        this.e = e;
     }
 
-    public double A { get; private set; }
+    public int EqCount { get; } = 3;
 
-    public double B { get; private set; }
+    public string Name { get; } = "Chua's circuit";
 
-    public double C { get; private set; }
-
-    public double D { get; private set; }
-
-    public double E { get; private set; }
-
-    public override string Name => "Chua's circuit";
-
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
-        A = parameters[0];
-        B = parameters[1];
-        C = parameters[2];
-        D = parameters[3];
-        E = parameters[4];
+        a = parameters[0];
+        b = parameters[1];
+        c = parameters[2];
+        d = parameters[3];
+        e = parameters[4];
     }
 
     /// <summary>
@@ -69,38 +64,27 @@ public class ChuaCircuit : SystemBase
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[] derivs)
     {
-        x = current[0, 0];
-        y = current[0, 1];
-        z = current[0, 2];
+        double x = solution[0];
+        double y = solution[1];
+        double z = solution[2];
 
-        derivs[0, 0] = A * (y - x - G(x));
-        derivs[0, 1] = B * (x - y + z);
-        derivs[0, 2] = -C * y;
-    }
-
-    /// <summary>
-    /// [0.7, 0, 0]
-    /// </summary>
-    /// <param name="current">current solution</param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        current[0, 0] = 0.7;
-        current[0, 1] = 0;
-        current[0, 2] = 0;
+        derivs[0] = a * (y - x - G(x));
+        derivs[1] = b * (x - y + z);
+        derivs[2] = -c * y;
     }
 
     public override string ToString() =>
         string.Format(
             SysFormat.GetInfoTemplate(Name, "α", "β", "ς", "δ", "ε"),
-            A, B, C, D, E);
+            a, b, c, d, e);
 
-    public override string ToFileName() =>
+    public string ToFileName() =>
         string.Format(
             SysFormat.GetFileTemplate("chua", "a", "b", "c", "d", "e"),
-            A, B, C, D, E);
+            a, b, c, d, e);
 
     private double G(double x) =>
-        E * x + (D - E) / 2 * (Math.Abs(x + 1) - Math.Abs(x - 1));
+        e * x + (d - e) / 2 * (Math.Abs(x + 1) - Math.Abs(x - 1));
 }

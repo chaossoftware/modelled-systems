@@ -1,6 +1,7 @@
 ﻿using ChaosSoft.Core.Data;
 using ChaosSoft.Core.IO;
-using ChaosSoft.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Ode;
+using ScottPlot;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ModelledSystems.Routines;
 
-internal class Bifurcation : Routine
+internal sealed class Bifurcation : Routine
 {
     private readonly TaskProgress _progress;
     private readonly ConcurrentBag<DataPoint> _dataPoints;
@@ -39,13 +40,21 @@ internal class Bifurcation : Routine
             SolveEquationsFor(_param.From + _paramStep * i);
         });
 
+        float ptSize = _totalIterations switch
+        {
+            < 1000 => 0.5f,
+            < 2500 => 0.25f,
+            _ => 0.13f
+        };
+
         _solutions.DataPoints.AddRange(_dataPoints);
 
-        DataWriter.CreateDataFile(FileNameBase + "_data_bifur_" + _param.Name, _solutions.ToString());
+        FileUtils.CreateDataFile(FileNameBase + "_data_bifur_" + _param.Name, _solutions.ToString());
 
-        var plt = GetPlot(_param.Name, "x");
-        plt.AddScatterPoints(_solutions.XValues, _solutions.YValues, Color.Blue, 1);
-        plt.SaveFig(FileNameBase + $"_bifur_{_param.Name}.png");
+        Plot bifurcationPlot = GetPlot(_param.Name, "x");
+        bifurcationPlot.AddScatterPoints(_solutions.XValues, _solutions.YValues, Color.Blue, ptSize);
+
+        SavePlot(bifurcationPlot, FileNameBase + $"_bifur_{_param.Name}.png");
     }
 
     private void SolveEquationsFor(double paramValue)
@@ -53,18 +62,19 @@ internal class Bifurcation : Routine
         double[] vars = SysConfig.ParamsValues.ToArray();
         vars[_drivingParamIndex] = paramValue;
 
-        SystemBase eq = GetSystemEquations(vars);
-        SolverBase solver = GetSolver(eq);
+        IOdeSys eq = GetSystemEquations(vars);
+        OdeSolverBase solver = GetSolver(eq);
+        solver.SetInitialConditions(0, GetInitialConditions());
 
         for (int j = 0; j < _totalIterations; j++)
         {
-            solver.NexStep();
+            solver.NextStep();
 
             if (j > _totalIterations - _lastIter)
             {
-                double rez = solver.Solution[0, 0];
+                double rez = solver.Solution[0];
 
-                if (!double.IsInfinity(rez) && !double.IsNaN(rez) && Math.Abs(rez) < 1000)
+                if (!solver.IsSolutionDecayed() && Math.Abs(rez) < 1000)
                 {
                     _dataPoints.Add(new DataPoint(paramValue, rez));
                 }

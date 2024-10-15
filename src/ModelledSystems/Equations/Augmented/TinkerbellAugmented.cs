@@ -1,31 +1,24 @@
-﻿using System;
+﻿using ChaosSoft.Core;
+using System;
 
 namespace ModelledSystems.Equations.Augmented;
 
-public class TinkerbellAugmented : AugmentedEquations
+public sealed class TinkerbellAugmented : IAugmentedEquations, IHasName, IHasParameters
 {
-    protected const int EqCount = 6;
-
     private double a = 0.9;
     private double b = -0.6013;
     private double c = 2.0;
     private double d = 0.5;
 
-    public TinkerbellAugmented() : base(EqCount)
+    public TinkerbellAugmented()
     {
     }
 
-    public TinkerbellAugmented(double a, double b, double c, double d) : base(EqCount)
-    {
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.d = d;
-    }
+    public int EqCount { get; } = 6;
 
-    public override string Name => "Tinkerbell Map Augmented";
+    public string Name { get; } = "Tinkerbell Map Augmented";
 
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
         a = parameters[0];
         b = parameters[1];
@@ -33,38 +26,28 @@ public class TinkerbellAugmented : AugmentedEquations
         d = parameters[3];
     }
 
-    public override void GetDerivatives(double[,] current, double[,] derivs) 
+    public double P { get; set; } = 0;
+
+    public void F(double t, double[] solution, double[] derivs)
     {
-        double x2 = current[0, 2];
-        double y2 = current[0, 3];
+        double x2 = solution[2];
+        double y2 = solution[3];
 
-        double x_ = x2 + current[0, 4];
-        double y_ = y2 + current[0, 5];
+        double x_ = x2 + solution[4];
+        double y_ = y2 + solution[5];
 
-        derivs[0, 0] = x_ * x_ - y_ * y_ + a * x_ + b * y_;
-        derivs[0, 1] = 2 * x_ * y_ + c * x_ + d * y_;
+        derivs[0] = x_ * x_ - y_ * y_ + a * x_ + b * y_;
+        derivs[1] = 2 * x_ * y_ + c * x_ + d * y_;
 
-        derivs[0, 2] = x2 * x2 - y2 * y2 + a * x2 + b * y2;
-        derivs[0, 3] = 2 * x2 * y2 + c * x2 + d * y2;
+        derivs[2] = x2 * x2 - y2 * y2 + a * x2 + b * y2;
+        derivs[3] = 2 * x2 * y2 + c * x2 + d * y2;
 
-        derivs[0, 4] = (derivs[0, 0] - derivs[0, 2]) * Math.Exp(-p);
-        derivs[0, 5] = (derivs[0, 1] - derivs[0, 3]) * Math.Exp(-p);
-    }
-
-
-    public override void SetInitialConditions(double[,] current) 
-    {
-        for (int i = 0; i < Count; i++) 
-        {
-            current[0, i] = 1e-8;
-        }
+        derivs[4] = (derivs[0] - derivs[2]) * Math.Exp(-P);
+        derivs[5] = (derivs[1] - derivs[3]) * Math.Exp(-P);
     }
 
     public override string ToString() =>
         string.Format(
             SysFormat.GetInfoTemplate(Name, "a", "b", "c", "d"),
             a, b, c, d);
-
-    public override string ToFileName() =>
-        throw new NotImplementedException();
 }

@@ -1,6 +1,6 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Ode;
 using System;
-using System.Numerics;
 
 namespace ModelledSystems.Equations;
 
@@ -9,11 +9,13 @@ namespace ModelledSystems.Equations;
 /// breakdown and chaos with two zero Lyapunov exponents in coupled radio-physical generators,
 /// ” Journal of Computational and Nonlinear Dynamics 15, 111001.
 /// </summary>
-public class Stankevich : SystemBase
+public class Stankevich : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    protected const int EqCount = 3;
-
-    private double x, y, z, xPow2;
+    private double a;
+    private double b;
+    private double mu;
+    private double o;
+    private double om0;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Stankevich"/> class 
@@ -33,34 +35,26 @@ public class Stankevich : SystemBase
     /// <param name="mu"></param>
     /// <param name="koppa"></param>
     /// <param name="om0"></param>
-    public Stankevich(double alpha, double beta, double mu, double koppa, double om0) : base(EqCount)
+    public Stankevich(double alpha, double beta, double mu, double koppa, double om0)
     {
-        A = alpha;
-        B = beta;
-        Mu = mu;
-        O = koppa;
-        Om0 = om0;
+        a = alpha;
+        b = beta;
+        this.mu = mu;
+        o = koppa;
+        this.om0 = om0;
     }
 
-    public double A { get; private set; }
+    public int EqCount { get; } = 3;
 
-    public double B { get; private set; }
+    public string Name { get; } = "Stankevich attractor";
 
-    public double Mu { get; private set; }
-
-    public double O { get; private set; }
-
-    public double Om0 { get; private set; }
-
-    public override string Name => "Stankevich attractor";
-
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
-        A = parameters[0];
-        B = parameters[1];
-        Mu = parameters[2];
-        O = parameters[3];
-        Om0 = parameters[4];
+        a = parameters[0];
+        b = parameters[1];
+        mu = parameters[2];
+        o = parameters[3];
+        om0 = parameters[4];
     }
 
     /// <summary>
@@ -70,38 +64,26 @@ public class Stankevich : SystemBase
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[] derivs)
     {
-        x = current[0, 0];
-        y = current[0, 1];
-        z = current[0, 2];
-        
-        xPow2 = x * x;
+        double x = solution[0];
+        double y = solution[1];
+        double z = solution[2];
 
-        derivs[0, 0] = y;
-        derivs[0, 1] = (A + z + xPow2 - B * xPow2 * xPow2) * y - Om0 * Om0 * x;
-        derivs[0, 2] = Mu - z  - O * y * y;
-    }
+        double xPow2 = x * x;
 
-    /// <summary>
-    /// [0.01, 0.01, 0.01].
-    /// </summary>
-    /// <param name="current">current solution</param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        for (int i = 0; i < Count; i++)
-        {
-            current[0, i] = 0.01;
-        }
+        derivs[0] = y;
+        derivs[1] = (a + z + xPow2 - b * xPow2 * xPow2) * y - om0 * om0 * x;
+        derivs[2] = mu - z  - o * y * y;
     }
 
     public override string ToString() => 
         string.Format(
             SysFormat.GetInfoTemplate(Name, "α", "β", "μ", "ǫ", "ω0"),
-            A, B, Mu, O, Om0);
+            a, b, mu, o, om0);
 
-    public override string ToFileName() => 
+    public string ToFileName() => 
         string.Format(
             SysFormat.GetFileTemplate("stankevich", "a", "b", "m", "o", "w0"),
-            A, B, Mu, O, Om0);
+            a, b, mu, o, om0);
 }

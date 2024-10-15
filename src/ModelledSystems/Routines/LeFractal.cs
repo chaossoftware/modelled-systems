@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using ChaosSoft.Core.DataUtils;
-using ChaosSoft.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Ode;
+using ChaosSoft.NumericalMethods.Lyapunov;
+using ScottPlot;
 
 namespace ModelledSystems.Routines;
 
-internal class LeFractal : Routine
+internal sealed class LeFractal : Routine
 {
     private readonly int _paramIndex;
     private readonly string _sequence;
@@ -41,16 +42,16 @@ internal class LeFractal : Routine
 
     private void GetImage()
     {
-        var plt = GetPlot(_parameter.Name, _parameter.Name);
+        Plot fractalPlot = GetPlot(_parameter.Name, _parameter.Name);
         
         //int maxPositiveLeIndex = (int)Matrixes.Max(_arr);
         //int minLeIndex = (int)Matrixes.Min(_arr);
         MakeGradient();
 
-        var hm = plt.AddHeatmap(_arr, ScottPlot.Drawing.Colormap.Topo, lockScales: false);
+        var hm = fractalPlot.AddHeatmap(_arr, ScottPlot.Drawing.Colormap.Topo, lockScales: false);
         //var cb = plt.AddColorbar(hm);
         hm.Smooth = true;
-        plt.Margins(0, 0);
+        fractalPlot.Margins(0, 0);
 
         //double[] ticks = Arrays.GenerateUniformArray(maxPositiveLeIndex + 1, minLeIndex, 1d);
 
@@ -62,10 +63,10 @@ internal class LeFractal : Routine
         double[] positions = new double[] { 0, _iterations };
         string[] labels = new string[] { _parameter.From.ToString(), _parameter.To.ToString() };
 
-        plt.XTicks(positions, labels);
-        plt.YTicks(positions, labels);
+        fractalPlot.XTicks(positions, labels);
+        fractalPlot.YTicks(positions, labels);
 
-        plt.SaveFig(FileNameBase + "_lyapunov_fractal.png");
+        SavePlot(fractalPlot, FileNameBase + "_lyap_fractal.png");
     }
 
     public void Func(int z)
@@ -78,17 +79,13 @@ internal class LeFractal : Routine
 
         double[] vars = SysConfig.ParamsValues.ToArray();
 
-        SystemBase equations = GetSystemEquations(vars);
-        Type solverType = GetSolverType();
+        IOdeSys equations = GetSystemEquations(vars);
+        SolverType solverType = SysConfig.Solver.Type;
         double eqStep = SysConfig.Solver.Dt;
         long totIter = (long)(SysConfig.Solver.ModellingTime / eqStep);
 
-        ChaosSoft.NumericalMethods.Lyapunov.LleBenettin benettin = new ChaosSoft.NumericalMethods.Lyapunov.LleBenettin(equations, solverType, eqStep, totIter);
-
-        // Synthetically need to make different initial conditions (solvers are not accessible)
-        SolverBase solver1 = benettin.GetType().GetField("_solver1", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(benettin) as SolverBase;
-        SolverBase solver2 = benettin.GetType().GetField("_solver2", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(benettin) as SolverBase;
-        solver2.Solution[0, 0] += solver1.Solution[0, 0] + 1E-08;
+        LleBenettin benettin = new(equations, solverType, GetInitialConditions(), eqStep, totIter);
+        benettin.MakeInitialConditionsDifference();
 
         for (int i = 0; i < totIter; i++)
         {
@@ -96,7 +93,7 @@ internal class LeFractal : Routine
             //TODO determine vars
 
             vars[_paramIndex] = val;
-            equations.SetParameters(vars);
+            (equations as IHasParameters).SetParameters(vars);
             benettin.MakeIteration();
         }
 

@@ -1,40 +1,24 @@
-﻿namespace ModelledSystems.Equations.Linearized;
+﻿using ChaosSoft.NumericalMethods.Ode.Linearized;
+
+namespace ModelledSystems.Equations.Linearized;
 
 /// <summary>
 /// Henon system equations
 /// parameters: a, b
 /// 2 linear and 4 non-linear equations
 /// </summary>
-public class LogisticLinearized : LogisticMap
+public sealed  class LogisticLinearized : LogisticMap, ILinearizedOdeSys
 {
     public LogisticLinearized() : base()
     {
-        Rows += EqCount;
     }
 
     public LogisticLinearized(double r) : base(r)
     {
-        Rows += EqCount;
     }
 
-    public override string Name => "Logistic Map (linearized)";
-
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[,] linearization, double[,] derivs)
     {
-        base.GetDerivatives(current, derivs);
-
-        //Linearized Logistic map equations:
-        derivs[1, 0] = R - 2 * R * current[0, 0];
-    }
-
-    public override void SetInitialConditions(double[,] current)
-    {
-        base.SetInitialConditions(current);
-
-        //set diagonal elements to 1
-        for (int i = 0; i < Count; i++)
-        {
-            current[i + 1, i] = 1;
-        }
+        derivs[0, 0] = r - 2 * r * solution[0];
     }
 }

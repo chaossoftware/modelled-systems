@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ChaosSoft.NumericalMethods.Ode;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -51,6 +52,9 @@ public class OutputCfg
     [XmlAttribute("picHeight")]
     public int PicHeight { get; set; }
 
+    [XmlAttribute("picScale")]
+    public int PicScale { get; set; }
+
     [XmlAttribute("outDir")]
     public string Dir { get; set; }
 
@@ -97,6 +101,36 @@ public class SystemCfg
     [XmlArrayItem("Param", typeof(SysParamCfg))]
     public SysParamCfg[] Params { get; set; }
 
+    [XmlElement("InitialConditions")]
+    public string InitialConditionsValue { get; set; }
+
+    [XmlElement("LinearInitialConditions")]
+    public string LinearInitialConditionsValue { get; set; }
+
+    public double[] InitialConditions => 
+        InitialConditionsValue.Split(' ').Select(v => Convert.ToDouble(v, CultureInfo.InvariantCulture)).ToArray();
+
+    public double[,] LinearInitialConditions
+    {
+        get
+        {
+            string[] rows = LinearInitialConditionsValue.Split(';');
+            double[,] conditions = new double[rows.Length, rows.Length];
+
+            for (int i = 0; i < rows.Length; i++)
+            {
+                string[] columns = rows[i].Trim().Split(' ');
+                
+                for (int j = 0; j < rows.Length; j++)
+                {
+                    conditions[i, j] = Convert.ToDouble(columns[j].Trim(), CultureInfo.InvariantCulture);
+                }
+            }
+
+            return conditions;
+        }
+    }
+
     public double[] ParamsValues => Params.Select(p => p.Value).ToArray();
 }
 
@@ -110,6 +144,15 @@ public class SysSolverCfg
 
     [XmlAttribute("dt")]
     public double Dt { get; set; }
+
+    public SolverType Type =>
+        Name.ToLowerInvariant() switch
+        {
+            "discrete" => SolverType.Discrete,
+            "rk4" => SolverType.RK4,
+            "rk5" => SolverType.RK5,
+            _ => throw new NotSupportedException($"Unknown solver {Name}"),
+        };
 }
 
 public class SysParamCfg

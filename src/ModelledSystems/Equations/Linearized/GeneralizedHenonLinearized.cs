@@ -1,43 +1,28 @@
-﻿namespace ModelledSystems.Equations.Linearized;
+﻿using ChaosSoft.NumericalMethods.Ode.Linearized;
+
+namespace ModelledSystems.Equations.Linearized;
 
 /// <summary>
 /// Henon system equations
 /// 2 linear and 4 non-linear equations
 /// </summary>
-public class GeneralizedHenonLinearized : GeneralizedHenonMap
+public sealed class GeneralizedHenonLinearized : GeneralizedHenonMap, ILinearizedOdeSys
 {
     public GeneralizedHenonLinearized() : base()
     {
-        Rows += EqCount;
     }
 
     public GeneralizedHenonLinearized(double a, double b) : base(a, b)
     {
-        Rows += EqCount;
     }
 
-    public override string Name => "Generalized Henon Map (linearized)";
-
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[,] linearization, double[,] derivs)
     {
-        base.GetDerivatives(current, derivs);
-
-        for (int i = 0; i < Count; i++)
+        for (int i = 0; i < EqCount; i++)
         {
-            derivs[1, i] = -2 * current[0, 1] * current[2, i] - B * current[3, i];
-            derivs[2, i] = current[1, i];
-            derivs[3, i] = current[2, i];
-        }
-    }
-
-    public override void SetInitialConditions(double[,] current)
-    {
-        base.SetInitialConditions(current);
-
-        //set diagonal and first n elements to 1
-        for (int i = 0; i < Count; i++)
-        {
-            current[i + 1, i] = 1;
+            derivs[0, i] = -2 * solution[1] * linearization[1, i] - b * linearization[2, i];
+            derivs[1, i] = linearization[0, i];
+            derivs[2, i] = linearization[1, i];
         }
     }
 }

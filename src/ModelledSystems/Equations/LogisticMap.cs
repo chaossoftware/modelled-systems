@@ -1,4 +1,5 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Ode;
 
 namespace ModelledSystems.Equations;
 
@@ -6,11 +7,9 @@ namespace ModelledSystems.Equations;
 /// Equations system for 
 /// <see href="https://en.wikipedia.org/wiki/Logistic_map">Logistic map</see>.
 /// </summary>
-public class LogisticMap : SystemBase
+public class LogisticMap : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    protected const int EqCount = 1;
-
-    private double x;
+    protected double r;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LogisticMap"/> class 
@@ -26,48 +25,35 @@ public class LogisticMap : SystemBase
     /// with specific system parameters values.
     /// </summary>
     /// <param name="r"></param>
-    public LogisticMap(double r) : base(EqCount)
+    public LogisticMap(double r)
     {
-        R = r;
+        this.r = r;
     }
 
-    public double R { get; private set; }
+    public int EqCount { get; } = 1;
 
-    public override string Name => "Logistic map";
+    public string Name { get; } = "Logistic map";
 
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
-        R = parameters[0];
+        r = parameters[0];
     }
 
     /// <summary>
     /// xₙ₊₁ = Rxₙ * (1 − xₙ)
     /// </summary>
-    /// <param name="current">current solution</param>
+    /// <param name="solution">current solution</param>
     /// <param name="derivs">derivatives</param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[] derivs)
     {
-        x = current[0, 0];
-
-        derivs[0, 0] = R * x * (1 - x);
-    }
-
-    /// <summary>
-    /// [0.1].
-    /// </summary>
-    /// <param name="current">current solution</param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        current[0, 0] = 0.1;
+        derivs[0] = r * solution[0] * (1 - solution[0]);
     }
 
     public override string ToString() =>
-        string.Format(
-            SysFormat.GetInfoTemplate(Name, "R"),
-            R);
+        string.Format(SysFormat.GetInfoTemplate(Name, "R"), 
+            r);
 
-    public override string ToFileName() =>
-        string.Format(
-            SysFormat.GetFileTemplate("logistic", "R"),
-            R);
+    public string ToFileName() =>
+        string.Format(SysFormat.GetFileTemplate("logistic", "R"), 
+            r);
 }

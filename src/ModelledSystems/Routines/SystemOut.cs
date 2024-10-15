@@ -1,19 +1,20 @@
-﻿using ChaosSoft.Core.IO;
-using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.Core.IO;
+using ChaosSoft.NumericalMethods.Ode;
+using ChaosSoft.NumericalMethods.Transform;
+using ScottPlot;
 using System.Drawing;
-using System.IO;
 using System.Text;
 
 namespace ModelledSystems.Routines;
 
-internal class SystemOut : Routine
+internal sealed class SystemOut : Routine
 {
     private readonly long _iterations;
-    private readonly int _eqN;
     private readonly double _dt;
-    private readonly double[][] _systemOut;
-    private readonly SystemBase _equations;
-    private readonly SolverBase _solver;
+    private readonly double[][] _output;
+    private readonly IOdeSys _equations;
+    private readonly OdeSolverBase _solver;
     private readonly bool _binaryOutput;
 
     public SystemOut(string outDir, SystemCfg sysParams, bool binaryOutput) : base (outDir, sysParams)
@@ -21,13 +22,13 @@ internal class SystemOut : Routine
         _binaryOutput = binaryOutput;
         _dt = sysParams.Solver.Dt;
         _equations = GetSystemEquations(sysParams.ParamsValues);
-        _eqN = _equations.Count;
         _iterations = (long)(sysParams.Solver.ModellingTime / _dt) + 1;
-        _systemOut = new double[_eqN][];
+
+        _output = new double[_equations.EqCount][];
         
-        for (int i = 0; i < _systemOut.Length; i++)
+        for (int i = 0; i < _equations.EqCount; i++)
         {
-            _systemOut[i] = new double[_iterations];
+            _output[i] = new double[_iterations];
         }
 
         _solver = GetSolver(_equations);
@@ -35,13 +36,15 @@ internal class SystemOut : Routine
 
     public override void Run()
     {
+        _solver.SetInitialConditions(0, GetInitialConditions());
+
         for (int i = 0; i < _iterations; i++)
         {
-            _solver.NexStep();
+            _solver.NextStep();
 
-            for (int k = 0; k < _eqN; k++)
+            for (int k = 0; k < _equations.EqCount; k++)
             {
-                _systemOut[k][i] = _solver.Solution[0, k];
+                _output[k][i] = _solver.Solution[k];
             }
         }
 
@@ -50,51 +53,62 @@ internal class SystemOut : Routine
 
     private void WriteResults()
     {
-        StringBuilder output = new StringBuilder();
+        string baseFilePath = GetBaseFilePath(_equations, _dt);
 
-        string fileNameStart = Path.Combine(OutDir, _equations.ToFileName() + $"_st={_dt:0.###}");
+        StringBuilder output = new();
 
         double[] xt = new double[_iterations];
         double[] yt = new double[_iterations];
         double[] zt = new double[_iterations];
 
         double t = 0;
+        int eqN = _equations.EqCount;
 
         for (int cnt = 0; cnt < _iterations; cnt++)
         {
-            output.AppendFormat("{0:F5}", t);
+            output.Append(NumFormat.Format(t, Constants.TimeOutput));
 
-            for (int k = 0; k < _eqN; k++)
+            for (int k = 0; k < eqN; k++)
             {
-                output.AppendFormat("\t{0:F15}", _systemOut[k][cnt]);
+                output.Append(Constants.ColumnDelimiter)
+                    .Append(NumFormat.Format(_output[k][cnt], Constants.LongOutput));
             }
 
             output.AppendLine();
 
-            xt[cnt] = _systemOut[0][cnt];
-            yt[cnt] = _eqN > 1 ? _systemOut[1][cnt] : 1;
-            zt[cnt] = _eqN > 2 ? _systemOut[2][cnt] : 1;
+            xt[cnt] = _output[0][cnt];
+            yt[cnt] = eqN > 1 ? _output[1][cnt] : 0;
+            zt[cnt] = eqN > 2 ? _output[2][cnt] : 0;
 
             t += _dt;
         }
 
-        if(_eqN > 1)
+        if (eqN > 1)
         {
-            var plt = GetPlot("x", "y");
-            plt.AddScatterPoints(xt, yt, Color.Blue, 1);
-            plt.SaveFig(FileNameBase + "_attractor.png");
+            Plot attractorPlot = GetPlot("x", "y");
+
+            if (_solver is DiscreteSolver)
+            {
+                attractorPlot.AddScatterPoints(xt, yt, Color.Blue, 1);
+            }
+            else
+            {
+                attractorPlot.AddScatterLines(xt, yt, Color.Blue, 1);
+            }
+
+            SavePlot(attractorPlot, baseFilePath + "_attractor.png");
         }
-        
+
         if (_binaryOutput)
         {
-            DataWriter.CreateBytesDataFile(fileNameStart + ".dat", _systemOut);
+            new BinaryDataFileWriter().WriteData(baseFilePath + ".bin", _output);
         }
         else
         {
-            DataWriter.CreateDataFile(fileNameStart + ".dat", output.ToString());
+            FileUtils.CreateDataFile(baseFilePath + ".dat", output.ToString());
         }
 
-        Model3D.Create3daModelFile(FileNameBase + ".3da", xt, yt, zt);
-        Sound.CreateWavFile(FileNameBase + ".wav", xt);
+        Model3D.Create3daModelFile(baseFilePath + ".3da", xt, yt, zt);
+        Sound.CreateWavFile(baseFilePath + ".wav", xt);
     }
 }

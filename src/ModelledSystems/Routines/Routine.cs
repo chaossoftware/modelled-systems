@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
-using ChaosSoft.NumericalMethods.Equations;
-using ChaosSoft.NumericalMethods.Orthogonalization;
+using ChaosSoft.NumericalMethods.Ode;
+using ChaosSoft.NumericalMethods.Ode.Linearized;
+using ChaosSoft.NumericalMethods.QrDecomposition;
 using ModelledSystems.Equations;
 using ModelledSystems.Equations.Linearized;
 using ScottPlot;
@@ -24,31 +25,42 @@ abstract class Routine
     public int PicWidth { get; set; }
 
     public int PicHeight { get; set; }
+    
+    public double PicScale { get; set; }
 
-    protected string FileNameBase { get; } 
+    protected string FileNameBase { get; }
+
+    protected string GetBaseFilePath(IOdeSys odeSys, double dt) =>
+        Path.Combine(OutDir, $"{(odeSys as IHasFileName).ToFileName()}_st={dt:0.###}");
 
     public abstract void Run();
 
     protected Plot GetPlot(string xLabel, string yLabel)
     {
-        Plot plot = new Plot(PicWidth, PicHeight);
+        Plot plot = new(PicWidth, PicHeight);
 
-        plot.XAxis.LabelStyle(fontSize: 12);
-        plot.YAxis.LabelStyle(fontSize: 12);
+        plot.XAxis.LabelStyle(fontSize: 15);
+        plot.YAxis.LabelStyle(fontSize: 15);
+        plot.XAxis.TickLabelStyle(fontSize: 14);
+        plot.YAxis.TickLabelStyle(fontSize: 14);
         plot.XAxis.Label(xLabel);
         plot.YAxis.Label(yLabel);
         plot.Layout(padding: 0);
+        plot.Grid(enable: false);
 
         return plot;
     }
 
-    protected SystemBase GetSystemEquations(double[] sysParams)
+    protected void SavePlot(Plot plot, string path) =>
+        plot.SaveFig(path, scale: PicScale);
+
+    protected IOdeSys GetSystemEquations(double[] sysParams)
     {
-        SystemBase eq = SysConfig.Name.ToLowerInvariant() switch
+        IOdeSys eq = SysConfig.Name.ToLowerInvariant() switch
         {
+            "logistic" => new LogisticMap(),
             "henon" => new HenonMap(),
             "henon_generalized" => new GeneralizedHenonMap(),
-            "logistic" => new LogisticMap(),
             "tinkerbell" => new TinkerbellMap(),
             "lorenz" => new LorenzAttractor(),
             "rossler" => new Rossler(),
@@ -64,13 +76,13 @@ abstract class Routine
             _ => throw new ArgumentException($"No such system: {SysConfig.Name}"),
         };
 
-        eq.SetParameters(sysParams);
+        (eq as IHasParameters).SetParameters(sysParams);
         return eq;
     }
 
-    protected SystemBase GetLinearizedSystemEquations(double[] sysParams)
+    protected ILinearizedOdeSys GetLinearizedSystemEquations(double[] sysParams)
     {
-        SystemBase eq = SysConfig.Name.ToLowerInvariant() switch
+        ILinearizedOdeSys eq = SysConfig.Name.ToLowerInvariant() switch
         {
             "lorenz" => new LorenzLinearized(),
             "rossler" => new RosslerLinearized(),
@@ -83,33 +95,17 @@ abstract class Routine
             _ => throw new ArgumentException($"No such system: {SysConfig.Name}"),
         };
 
-        eq.SetParameters(sysParams);
+        (eq as IHasParameters).SetParameters(sysParams);
         return eq;
     }
 
-    public SolverBase GetSolver(SystemBase eq)
-    {
-        double dt = SysConfig.Solver.Dt;
+    public OdeSolverBase GetSolver(IOdeSys eq) =>
+        SolverFactory.Get(SysConfig.Solver.Type, eq, SysConfig.Solver.Dt);
 
-        return SysConfig.Solver.Name.ToLowerInvariant() switch
-        {
-            "discrete" => new DiscreteSolver(eq, dt),
-            "rk5" => new RK5(eq, dt),
-            _ => new RK4(eq, dt),
-        };
-    }
+    public LinearizedOdeSolverBase GetLinearizedSolver(ILinearizedOdeSys eq) =>
+        SolverFactory.Get(SysConfig.Solver.Type, eq, SysConfig.Solver.Dt);
 
-    public Type GetSolverType()
-    {
-        return SysConfig.Solver.Name.ToLowerInvariant() switch
-        {
-            "discrete" => typeof(DiscreteSolver),
-            "rk5" => typeof(RK5),
-            _ => typeof(RK4),
-        };
-    }
-
-    public OrthogonalizationBase GetOrthogonalization(string ortType, int equationsCount)
+    public IQrDecomposition GetOrthogonalization(string ortType, int equationsCount)
     {
         return ortType.ToLowerInvariant() switch
         {
@@ -119,4 +115,7 @@ abstract class Routine
             _ => throw new ArgumentException($"No such system: {SysConfig.Name}"),
         };
     }
+
+    public double[] GetInitialConditions() =>
+        SysConfig.InitialConditions;
 }

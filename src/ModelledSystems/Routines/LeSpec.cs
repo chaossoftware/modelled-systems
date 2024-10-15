@@ -1,14 +1,13 @@
-﻿using ChaosSoft.Core.DataUtils;
-using ChaosSoft.Core.IO;
-using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.Core.DataUtils;
+using ChaosSoft.Core.Logging;
 using ChaosSoft.NumericalMethods.Lyapunov;
-using ChaosSoft.NumericalMethods.Orthogonalization;
-using System;
-using System.Linq;
+using ChaosSoft.NumericalMethods.Ode.Linearized;
+using ChaosSoft.NumericalMethods.QrDecomposition;
 
 namespace ModelledSystems.Routines;
 
-internal class LeSpec : Routine
+internal sealed class LeSpec : Routine
 {
     private readonly long _iterations;
     private readonly int _eqCount;
@@ -17,10 +16,10 @@ internal class LeSpec : Routine
     private double[] _rMatrix;          //normalized vector (triangular matrix)
     //private readonly double[,] _leSpecInTime;
 
-    private readonly SystemBase _equations;
-    private readonly SolverBase _solver;
+    private readonly ILinearizedOdeSys _equations;
+    private readonly LinearizedOdeSolverBase _solver;
     private readonly double _dt;
-    private readonly OrthogonalizationBase _orthogonalization;
+    private readonly IQrDecomposition _orthogonalization;
     private readonly int _irate;
 
     private int j, i;            //counters 
@@ -32,9 +31,9 @@ internal class LeSpec : Routine
         _dt = SysConfig.Solver.Dt;
 
         _equations = GetLinearizedSystemEquations(SysConfig.ParamsValues);
-        _solver = GetSolver(_equations);
+        _solver = GetLinearizedSolver(_equations);
 
-        _eqCount = _equations.Count;
+        _eqCount = _equations.EqCount;
 
         _orthogonalization = GetOrthogonalization(orthogonalization.Type, _eqCount);
         _iterations = (long)(SysConfig.Solver.ModellingTime / _dt);
@@ -45,23 +44,24 @@ internal class LeSpec : Routine
 
     public override void Run()
     {
+        _solver.SetInitialConditions(0, GetInitialConditions());
+        _solver.SetLinearInitialConditions(SysConfig.LinearInitialConditions);
+
         for (i = 0; i < _iterations; i++)
         {
             for (j = 0; j < _irate; j++)
             {
-                _solver.NexStep();
+                _solver.NextStep();
             }
 
-            //------------------- Call Orthonormalization -------------
-            _orthogonalization.Perform(_solver.Solution, _rMatrix);
-
-            _leSpec.CalculateLyapunovSpectrum(_rMatrix, _solver.Time);
-
-            if (_rMatrix.Any(v => double.IsNaN(v) || double.IsInfinity(v)))
+            if (_solver.IsSolutionDecayed())
             {
                 Vector.FillWith(_leSpec.Result, double.NaN);
                 break;
             }
+
+            _rMatrix = _orthogonalization.Perform(_solver.Linearization);
+            _leSpec.CalculateLyapunovSpectrum(_rMatrix, _solver.T);
 
             //------------------- normalize and print exponent ------------
             //for (j = 0; j < _eqCount; j++)
@@ -76,13 +76,12 @@ internal class LeSpec : Routine
 
     private void WriteResults()
     {
-        Console.WriteLine("LES = " + Format.General(_leSpec.Result, ",", 5));
+        Log.Info("LEs = {0}", NumFormat.Format(_leSpec.Result, Constants.LeNumFormat, " , "));
+        Log.Info("Dky = {0}", NumFormat.Format(StochasticProperties.KYDimension(_leSpec.Result), Constants.LeNumFormat));
+        Log.Info("Eks = {0}", NumFormat.Format(StochasticProperties.KSEntropy(_leSpec.Result), Constants.LeNumFormat));
+        Log.Info("PVC = {0}", NumFormat.Format(StochasticProperties.PhaseVolumeContractionSpeed(_leSpec.Result), Constants.LeNumFormat));
 
-        Console.WriteLine($"Dky = {Format.General(StochasticProperties.KYDimension(_leSpec.Result), 5)}");
-        Console.WriteLine($"Eks = {Format.General(StochasticProperties.KSEntropy(_leSpec.Result), 5)}");
-        Console.WriteLine($"PVC = {Format.General(StochasticProperties.PhaseVolumeContractionSpeed(_leSpec.Result), 5)}");
-
-        DataWriter.CreateDataFile(FileNameBase + ".le", _leSpec.Result.ToString());
+        //FileUtils.CreateDataFile(FileNameBase + ".le", _leSpec.Result.ToString());
 
         //double t = 0;
         //StringBuilder output = new StringBuilder();

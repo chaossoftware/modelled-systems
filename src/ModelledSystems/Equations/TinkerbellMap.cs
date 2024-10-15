@@ -1,4 +1,5 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Ode;
 
 namespace ModelledSystems.Equations;
 
@@ -6,11 +7,12 @@ namespace ModelledSystems.Equations;
 /// Equations system for 
 /// <see href="https://en.wikipedia.org/wiki/Tinkerbell_map">Tinkerbell map</see>.
 /// </summary>
-public class TinkerbellMap : SystemBase
+public class TinkerbellMap : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    protected const int EqCount = 2;
-
-    private double x, y;
+    protected double a;
+    protected double b;
+    protected double c;
+    protected double d;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TinkerbellMap"/> class 
@@ -29,64 +31,46 @@ public class TinkerbellMap : SystemBase
     /// <param name="b"></param>
     /// <param name="c"></param>
     /// <param name="d"></param>
-    public TinkerbellMap(double a, double b, double c, double d) : base(EqCount)
+    public TinkerbellMap(double a, double b, double c, double d)
     {
-        A = a;
-        B = b;
-        C = c;
-        D = d;
+        this.a = a;
+        this.b = b;
+        this.c = c;
+        this.d = d;
     }
 
-    public double A { get; private set; }
+    public int EqCount { get; } = 2;
 
-    public double B { get; private set; }
+    public string Name { get; } = "Tinkerbell map";
 
-    public double C { get; private set; }
-
-    public double D { get; private set; }
-
-    public override string Name => "Tinkerbell map";
-
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
-        A = parameters[0];
-        B = parameters[1];
-        C = parameters[2];
-        D = parameters[3];
+        a = parameters[0];
+        b = parameters[1];
+        c = parameters[2];
+        d = parameters[3];
     }
 
     /// <summary>
     /// xₙ₊₁ = xₙ² − yₙ² + axₙ + byₙ<br/>
     /// yₙ₊₁ = 2xₙyₙ + cxₙ + dyₙ
     /// </summary>
-    /// <param name="current">current solution</param>
+    /// <param name="solution">current solution</param>
     /// <param name="derivs">derivatives</param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[] derivs)
     {
-        x = current[0, 0];
-        y = current[0, 1];
+        double x = solution[0];
+        double y = solution[1];
 
-        derivs[0, 0] = x * x - y * y + A * x + B * y;
-        derivs[0, 1] = 2 * x * y + C * x + D * y;
-    }
-
-    /// <summary>
-    /// [0.001, 0.001].
-    /// </summary>
-    /// <param name="current">current solution</param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        current[0, 0] = -0.72;
-        current[0, 1] = -0.64;
+        derivs[0] = x * x - y * y + a * x + b * y;
+        derivs[1] = 2 * x * y + c * x + d * y;
     }
 
     public override string ToString() =>
-        string.Format(
-            SysFormat.GetInfoTemplate(Name, "a", "b", "c", "d"),
-            A, B, C, D);
+        string.Format(SysFormat.GetInfoTemplate(Name, "a", "b", "c", "d"),
+            a, b, c, d);
 
-    public override string ToFileName() =>
-        string.Format(
-            SysFormat.GetFileTemplate("tinkerbell", "a", "b", "c", "d"),
-            A, B, C, D);
+    public string ToFileName() =>
+        string.Format(SysFormat.GetFileTemplate("tinkerbell", "a", "b", "c", "d"),
+            a, b, c, d);
 }

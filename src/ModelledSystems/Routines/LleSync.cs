@@ -1,6 +1,10 @@
-﻿using ChaosSoft.Core.Data;
-using ChaosSoft.Core.IO;
+﻿using ChaosSoft.Core;
+using ChaosSoft.Core.Data;
+using ChaosSoft.Core.DataUtils;
+using ChaosSoft.Core.Logging;
 using ModelledSystems.Equations.Augmented;
+using ScottPlot;
+using ScottPlot.Plottable;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
@@ -8,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ModelledSystems.Routines;
 
-internal class LleSync : Routine
+internal sealed class LleSync : Routine
 {
     private readonly TaskProgress _progress;
 
@@ -42,11 +46,6 @@ internal class LleSync : Routine
 
         //DataWriter.CreateDataFile("fileName", SyncMapSeries.ToString());
 
-        var plt = GetPlot("p", "Δ");
-        plt.AddScatterPoints(_syncSeries.XValues, _syncSeries.YValues, Color.Blue, 1);
-
-        plt.SaveFig(FileNameBase + "_lyapunov_stefanski.png");
-
         int k = _syncSeries.Length - 1;
         double rezY = _syncSeries.DataPoints[k].Y;
         bool sync = true;
@@ -56,23 +55,35 @@ internal class LleSync : Routine
             sync = Math.Abs(_syncSeries.DataPoints[--k].Y - rezY) < 1e-8;
         }
 
-        Console.WriteLine("\nLLE = " + Format.General(_syncSeries.DataPoints[k++].X, 5));
+        double lle = _syncSeries.DataPoints[k++].X;
+        string result = NumFormat.Format(lle, Constants.LeNumFormat);
+        Log.Info("\nLLE = {0}", result);
+
+        Plot leSyncPlot = GetPlot("p", "Δ");
+        leSyncPlot.AddScatterPoints(_syncSeries.XValues, _syncSeries.YValues, Color.Blue, 0.25f);
+        leSyncPlot.AddVerticalLine(lle, Color.IndianRed, 1, LineStyle.DashDot);
+        Annotation annotation = leSyncPlot.AddAnnotation(result, 0, 0);
+        annotation.Shadow = false;
+
+        SavePlot(leSyncPlot, FileNameBase + "_lle_sync.png");
     }
 
     private void Func(double p)
     {
-        AugmentedEquations augmentedEquations = GetSystemEquations();
-        augmentedEquations.p = p;
+        IAugmentedEquations augmentedEquations = GetSystemEquations();
+        (augmentedEquations as IHasParameters).SetParameters(SysConfig.ParamsValues);
+        augmentedEquations.P = p;
 
         var solver = GetSolver(augmentedEquations);
+        solver.SetInitialConditions(0, GetInitialConditions(augmentedEquations.EqCount));
 
         for (int j = 0; j < _totalIterations; j++)
         {
-            solver.NexStep();
+            solver.NextStep();
 
             if (j > _totalIterations - _lastIter)
             {
-                double rez = solver.Solution[0, augmentedEquations.Count - augmentedEquations.Count / 3];
+                double rez = solver.Solution[augmentedEquations.EqCount - augmentedEquations.EqCount / 3];
 
                 if (!double.IsInfinity(rez) && !double.IsNaN(rez) && rez < 100 && rez > -100)
                 {
@@ -84,7 +95,7 @@ internal class LleSync : Routine
         _progress.Iterate();
     }
 
-    private AugmentedEquations GetSystemEquations()
+    private IAugmentedEquations GetSystemEquations()
     {
         return SysConfig.Name.ToLowerInvariant() switch
         {
@@ -98,4 +109,10 @@ internal class LleSync : Routine
         };
     }
 
+    public static double[] GetInitialConditions(int eqCount)
+    {
+        double[] array = new double[eqCount];
+        Vector.FillWith(array, 1e-8);
+        return array;
+    }
 }
