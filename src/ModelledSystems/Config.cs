@@ -14,6 +14,9 @@ public class Config
     [XmlElement("ModelingTask")]
     public TaskCfg Task { get; set; }
 
+    [XmlElement("Output")]
+    public OutputCfg Out { get; set; }
+
     [XmlArray("Routines")]
     [XmlArrayItem("Routine", typeof(RoutineCfg))]
     public RoutineCfg[] RoutinesList { get; set; }
@@ -39,27 +42,42 @@ public class TaskCfg
 
     [XmlElement("Orthogonalization")]
     public OrthogonalizationCfg Orthogonalization { get; set; }
-
-    [XmlElement("Output")]
-    public OutputCfg Out { get; set; }
 }
 
 public class OutputCfg
 {
-    [XmlAttribute("picWidth")]
-    public int PicWidth { get; set; }
-
-    [XmlAttribute("picHeight")]
-    public int PicHeight { get; set; }
-
-    [XmlAttribute("picScale")]
-    public int PicScale { get; set; }
+    [XmlElement("Charts")]
+    public ChartsCfg Charts { get; set; }
 
     [XmlAttribute("outDir")]
     public string Dir { get; set; }
 
     [XmlAttribute("binaryOutput")]
     public bool BinOutput { get; set; }
+}
+
+public class ChartsCfg
+{
+    [XmlAttribute("width")]
+    public int Width { get; set; }
+
+    [XmlAttribute("height")]
+    public int Height { get; set; }
+
+    [XmlAttribute("scale")]
+    public double Scale { get; set; }
+
+    [XmlAttribute("labelSize")]
+    public float LabelSize { get; set; }
+
+    [XmlAttribute("tickSize")]
+    public float TickSize { get; set; }
+
+    [XmlAttribute("padding")]
+    public float Padding { get; set; }
+
+    [XmlAttribute("grid")]
+    public bool Grid { get; set; }
 }
 
 public class OrthogonalizationCfg

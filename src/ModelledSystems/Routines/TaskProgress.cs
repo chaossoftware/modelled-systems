@@ -21,8 +21,11 @@ internal sealed class TaskProgress
     {
         if (++currentIteration / _step > printedSymbols)
         {
-            printedSymbols++;
-            Console.Write("#");
+            if (printedSymbols < Console.BufferWidth)
+            {
+                printedSymbols++;
+                Console.Write(">");
+            }
         }
     }
 }

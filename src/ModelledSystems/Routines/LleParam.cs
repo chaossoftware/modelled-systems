@@ -64,7 +64,15 @@ internal sealed class LleParam : Routine
         vars[_drivingParamIndex] = paramValue;
 
         IOdeSys equations = GetSystemEquations(vars);
-        LleBenettin benettin = new(equations, _solverType, GetInitialConditions(), _dt, _iterations);
+
+
+        OdeSolverBase solver = SolverFactory.Get(_solverType, equations, _dt);
+        solver.SetInitialConditions(0, SysConfig.InitialConditions);
+
+        OdeSolverBase solverCopy = SolverFactory.Get(_solverType, equations, _dt);
+        solverCopy.SetInitialConditions(0, SysConfig.InitialConditions);
+
+        LleBenettin benettin = new(solver, solverCopy, _iterations);
         benettin.Calculate();
 
         _dataPoints.Add(new DataPoint(paramValue, benettin.Result));

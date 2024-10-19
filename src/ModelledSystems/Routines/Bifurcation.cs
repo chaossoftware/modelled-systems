@@ -64,7 +64,7 @@ internal sealed class Bifurcation : Routine
 
         IOdeSys eq = GetSystemEquations(vars);
         OdeSolverBase solver = GetSolver(eq);
-        solver.SetInitialConditions(0, GetInitialConditions());
+        solver.SetInitialConditions(0, SysConfig.InitialConditions);
 
         for (int j = 0; j < _totalIterations; j++)
         {

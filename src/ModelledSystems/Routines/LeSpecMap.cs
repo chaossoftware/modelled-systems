@@ -105,7 +105,6 @@ internal sealed class LeSpecMap : Routine
     public void Func(int z)
     {
         long totIter;
-        double[] _rMatrix;
 
         int x = z / _iterations;
         int y = z % _iterations;
@@ -118,40 +117,17 @@ internal sealed class LeSpecMap : Routine
         ILinearizedOdeSys equations = GetLinearizedSystemEquations(vars);
 
         LinearizedOdeSolverBase solver = GetLinearizedSolver(equations);
-        solver.SetInitialConditions(0, GetInitialConditions());
+        solver.SetInitialConditions(0, SysConfig.InitialConditions);
         solver.SetLinearInitialConditions(SysConfig.LinearInitialConditions);
 
         totIter = (long)(SysConfig.Solver.ModellingTime / solver.Dt);
         IQrDecomposition ort = GetOrthogonalization(_ortType, equations.EqCount);
-        LeSpecBenettin lyap = new LeSpecBenettin(equations.EqCount);
-
-        _rMatrix = new double[equations.EqCount];
-
-        for (int i = 0; i < totIter; i++)
-        {
-            for (int j = 0; j < _irate; j++)
-            {
-                solver.NextStep();
-            }
-
-            if (solver.IsSolutionDecayed())
-            {
-                Vector.FillWith(lyap.Result, double.NaN);
-                break;
-            }
-
-            _rMatrix = ort.Perform(solver.Linearization);
-            lyap.CalculateLyapunovSpectrum(_rMatrix, solver.T);
-        }
+        LeSpecBenettin lyap = new(solver, totIter, ort, _irate);
+        lyap.Calculate();
 
         int rez = lyap.Result.Any(e => double.IsNaN(e)) 
             ? -1 
             : lyap.Result.Count(l => l > 9e-3);
-
-        //if (rez > 1)
-        //{
-        //    Console.WriteLine(Format.General(lyap.Result));
-        //}
 
         _arr[_iterations - 1 - y, x] = rez;
         _arrPvc[_iterations - 1 - y, x] = StochasticProperties.PhaseVolumeContractionSpeed(lyap.Result);

@@ -36,7 +36,7 @@ internal sealed class SystemOut : Routine
 
     public override void Run()
     {
-        _solver.SetInitialConditions(0, GetInitialConditions());
+        _solver.SetInitialConditions(0, SysConfig.InitialConditions);
 
         for (int i = 0; i < _iterations; i++)
         {

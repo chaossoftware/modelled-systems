@@ -26,7 +26,14 @@ internal sealed class Lle : Routine
 
     public override void Run()
     {
-        LleBenettin benettin = new(_equations, _solverType, GetInitialConditions(), _eqStep, _totalIterations);
+        OdeSolverBase solver = SolverFactory.Get(_solverType, _equations, _eqStep);
+        solver.SetInitialConditions(0, SysConfig.InitialConditions);
+
+        OdeSolverBase solverCopy = SolverFactory.Get(_solverType, _equations, _eqStep);
+        solverCopy.SetInitialConditions(0, SysConfig.InitialConditions);
+
+        LleBenettin benettin = new(solver, solverCopy, _totalIterations);
+
         benettin.Calculate();
         //WriteResults();
         Log.Info(benettin.ToString());

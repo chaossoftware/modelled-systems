@@ -21,7 +21,7 @@ internal class Program
         XmlSerializer serializer = new(typeof(Config));
         using FileStream fs = new(ConfigFile, FileMode.Open);
         _config = (Config)serializer.Deserialize(fs);
-        _outDir = Path.Combine(_config.Task.Out.Dir, _config.Task.System);
+        _outDir = Path.Combine(_config.Out.Dir, _config.Task.System);
     }
     
     public static void Main(string[] args)
@@ -55,9 +55,7 @@ internal class Program
         Stopwatch timer = Stopwatch.StartNew();
 
         Routine routine = GetRoutine();
-        routine.PicWidth = _config.Task.Out.PicWidth;
-        routine.PicHeight = _config.Task.Out.PicHeight;
-        routine.PicScale = _config.Task.Out.PicScale;
+        routine.ChartsConfig = _config.Out.Charts;
         routine.Run();
 
         Console.WriteLine(new string('_', Console.BufferWidth));
@@ -68,7 +66,7 @@ internal class Program
     private Routine GetRoutine() =>
         _config.Task.Action.ToLowerInvariant() switch
         {
-            "signal" => new SystemOut(_outDir, _config.System, _config.Task.Out.BinOutput),
+            "signal" => new SystemOut(_outDir, _config.System, _config.Out.BinOutput),
             "bifurcation" => new Bifurcation(_outDir, _config.System,
                                 _config.Routine.GetInt("paramIndex"),
                                 _config.Routine.GetInt("iterations")),

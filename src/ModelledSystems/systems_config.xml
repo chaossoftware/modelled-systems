@@ -5,9 +5,11 @@
     <Action>signal</Action>
     <Orthogonalization type="mgs" interval="1"/>
     <!-- cgs , mgs , hh -->
-
-    <Output outDir="Output" picWidth="320" picHeight="240" picScale="5" binaryOutput="false"/>
   </ModelingTask>
+
+  <Output outDir="Output" binaryOutput="false">
+    <Charts width="320" height="240" scale="5" labelSize="15" tickSize="14" padding="0" grid="false"/>
+  </Output>
 
   <Routines>
     <Routine name="signal"/>

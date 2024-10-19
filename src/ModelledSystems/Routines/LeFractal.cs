@@ -80,11 +80,15 @@ internal sealed class LeFractal : Routine
         double[] vars = SysConfig.ParamsValues.ToArray();
 
         IOdeSys equations = GetSystemEquations(vars);
-        SolverType solverType = SysConfig.Solver.Type;
         double eqStep = SysConfig.Solver.Dt;
         long totIter = (long)(SysConfig.Solver.ModellingTime / eqStep);
 
-        LleBenettin benettin = new(equations, solverType, GetInitialConditions(), eqStep, totIter);
+        OdeSolverBase solver = SolverFactory.Get(SysConfig.Solver.Type, equations, eqStep);
+        OdeSolverBase solverCopy = SolverFactory.Get(SysConfig.Solver.Type, equations, eqStep);
+        solver.SetInitialConditions(0, SysConfig.InitialConditions);
+        solverCopy.SetInitialConditions(0, SysConfig.InitialConditions);
+
+        LleBenettin benettin = new(solver, solverCopy, totIter);
         benettin.MakeInitialConditionsDifference();
 
         for (int i = 0; i < totIter; i++)

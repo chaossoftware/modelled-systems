@@ -22,11 +22,7 @@ abstract class Routine
 
     protected SystemCfg SysConfig { get; }
 
-    public int PicWidth { get; set; }
-
-    public int PicHeight { get; set; }
-    
-    public double PicScale { get; set; }
+    public ChartsCfg ChartsConfig { get; set; }
 
     protected string FileNameBase { get; }
 
@@ -37,22 +33,22 @@ abstract class Routine
 
     protected Plot GetPlot(string xLabel, string yLabel)
     {
-        Plot plot = new(PicWidth, PicHeight);
+        Plot plot = new(ChartsConfig.Width, ChartsConfig.Height);
 
-        plot.XAxis.LabelStyle(fontSize: 15);
-        plot.YAxis.LabelStyle(fontSize: 15);
-        plot.XAxis.TickLabelStyle(fontSize: 14);
-        plot.YAxis.TickLabelStyle(fontSize: 14);
+        plot.XAxis.LabelStyle(fontSize: ChartsConfig.LabelSize);
+        plot.YAxis.LabelStyle(fontSize: ChartsConfig.LabelSize);
+        plot.XAxis.TickLabelStyle(fontSize: ChartsConfig.TickSize);
+        plot.YAxis.TickLabelStyle(fontSize: ChartsConfig.TickSize);
         plot.XAxis.Label(xLabel);
         plot.YAxis.Label(yLabel);
-        plot.Layout(padding: 0);
-        plot.Grid(enable: false);
+        plot.Layout(padding: ChartsConfig.Padding);
+        plot.Grid(enable: ChartsConfig.Grid);
 
         return plot;
     }
 
     protected void SavePlot(Plot plot, string path) =>
-        plot.SaveFig(path, scale: PicScale);
+        plot.SaveFig(path, scale: ChartsConfig.Scale);
 
     protected IOdeSys GetSystemEquations(double[] sysParams)
     {
@@ -105,17 +101,12 @@ abstract class Routine
     public LinearizedOdeSolverBase GetLinearizedSolver(ILinearizedOdeSys eq) =>
         SolverFactory.Get(SysConfig.Solver.Type, eq, SysConfig.Solver.Dt);
 
-    public IQrDecomposition GetOrthogonalization(string ortType, int equationsCount)
-    {
-        return ortType.ToLowerInvariant() switch
+    public static IQrDecomposition GetOrthogonalization(string ortType, int equationsCount) =>
+        ortType.ToLowerInvariant() switch
         {
             "mgs" => new ModifiedGrammSchmidt(equationsCount),
             "cgs" => new ClassicGrammSchmidt(equationsCount),
             "hh" => new HouseholderTransformation(equationsCount),
-            _ => throw new ArgumentException($"No such system: {SysConfig.Name}"),
+            _ => throw new NotSupportedException($"No such QR decomposition: {ortType}"),
         };
-    }
-
-    public double[] GetInitialConditions() =>
-        SysConfig.InitialConditions;
 }
