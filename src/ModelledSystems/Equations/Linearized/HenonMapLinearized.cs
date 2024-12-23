@@ -1,55 +1,27 @@
-﻿namespace ModelledSystems.Equations.Linearized;
+﻿using ChaosSoft.NumericalMethods.Ode.Linearized;
 
-public class HenonMapLinearized : HenonMap
+namespace ModelledSystems.Equations.Linearized;
+
+public sealed class HenonMapLinearized : HenonMap, ILinearizedOdeSys
 {
-    private double xl, yl;
-
     public HenonMapLinearized() : base()
     {
-        Rows += EqCount;
     }
 
     public HenonMapLinearized(double a, double b) : base(a, b)
     {
-        Rows += EqCount;
     }
 
-    public override string Name => "Hénon map (linearized)";
-
-    /// <summary>
-    /// _xₙ₊₁ = -2axₙ * _xₙ + b * _yₙ
-    /// _yₙ₊₁ = _xₙ
-    /// </summary>
-    /// <param name="current"></param>
-    /// <param name="derivs"></param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[,] linearization, double[,] derivs)
     {
-        base.GetDerivatives(current, derivs);
+        double min2AX = -2.0 * a * solution[0]; // speed optimization
 
-        double min2AX = -2.0 * A * current[0, 0]; // speed optimization
-
-        //Linearized Henon map equations:
-        for (int i = 0; i < Count; i++)
+        for (int i = 0; i < EqCount; i++)
         {
-            xl = current[1, i];
-            yl = current[2, i];
+            double xl = linearization[0, i];
 
-            derivs[1, i] = min2AX * xl + B * yl;
-            derivs[2, i] = xl;
-        }
-    }
-
-    /// <summary>
-    /// Set diagonal elements to 1.
-    /// </summary>
-    /// <param name="current"></param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        base.SetInitialConditions(current);
-
-        for (int i = 0; i < Count; i++)
-        {
-            current[i + 1, i] = 1;
+            derivs[0, i] = min2AX * xl + b * linearization[1, i];
+            derivs[1, i] = xl;
         }
     }
 }

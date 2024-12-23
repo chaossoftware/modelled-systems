@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ModelledSystems.Routines;
 
-internal class TaskProgress
+internal sealed class TaskProgress
 {
     private readonly double _step;
     private int currentIteration;
@@ -12,18 +12,20 @@ internal class TaskProgress
     public TaskProgress(int totalIterations)
     {
         printedSymbols = 0;
-        currentIteration = 1;
+        currentIteration = 0;
         _step = totalIterations / (double)Console.BufferWidth;
     }
 
     [MethodImpl(MethodImplOptions.Synchronized)]
     public void Iterate()
     {
-        if (currentIteration++ / _step > printedSymbols)
+        if (++currentIteration / _step > printedSymbols)
         {
-            Console.Write("#");
-
-            printedSymbols++;
+            if (printedSymbols < Console.BufferWidth)
+            {
+                printedSymbols++;
+                Console.Write(">");
+            }
         }
     }
 }

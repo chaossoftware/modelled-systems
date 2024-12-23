@@ -1,63 +1,53 @@
-﻿using System;
+﻿using ChaosSoft.Core;
+using System;
 
 namespace ModelledSystems.Equations.Augmented;
-
 
 /// <summary>
 /// Henon system equations
 /// 2 linear and 4 non-linear equations
 /// </summary>
-public class HenonGeneralizedAugmented : AugmentedEquations
+public sealed class HenonGeneralizedAugmented : IAugmentedEquations, IHasName, IHasParameters
 {
-    protected const int EqCount = 9;
-
     private double a = 1.9;
     private double b = 0.03;
 
-    public HenonGeneralizedAugmented() : base(EqCount)
+    public HenonGeneralizedAugmented()
     {
     }
 
-    public override string Name => "Generalized Henon Map Augmented";
+    public int EqCount { get; } = 9;
 
-    public override void SetParameters(params double[] parameters)
+    public string Name { get; } = "Generalized Hénon Map Augmented";
+
+    public double P { get; set; } = 0;
+
+    public void SetParameters(params double[] parameters)
     {
         a = parameters[0];
         b = parameters[1];
     }
 
-    public override void GetDerivatives(double[,] current, double[,] derivs) 
+    public void F(double t, double[] solution, double[] derivs)
     {
-        double x00 = current[0, 3] + current[0, 6];
-        double x01 = current[0, 4] + current[0, 7];
-        double x02 = current[0, 5] + current[0, 8];
+        double x00 = solution[3] + solution[6];
+        double x01 = solution[4] + solution[7];
+        double x02 = solution[5] + solution[8];
 
         //Nonlinear Henon map equations:
-        derivs[0, 0] = a - x01 * x01 - b * x02;
-        derivs[0, 1] = x00;
-        derivs[0, 2] = x01;
+        derivs[0] = a - x01 * x01 - b * x02;
+        derivs[1] = x00;
+        derivs[2] = x01;
 
-        derivs[0, 3] = a - current[0, 4] * current[0, 4] - b * current[0, 5];
-        derivs[0, 4] = current[0, 3];
-        derivs[0, 5] = current[0, 4];
+        derivs[3] = a - solution[4] * solution[4] - b * solution[5];
+        derivs[4] = solution[3];
+        derivs[5] = solution[4];
 
-        derivs[0, 6] = (derivs[0, 0] - derivs[0, 3]) * Math.Exp(-p);
-        derivs[0, 7] = (derivs[0, 1] - derivs[0, 4]) * Math.Exp(-p);
-        derivs[0, 8] = (derivs[0, 2] - derivs[0, 5]) * Math.Exp(-p);
-    }
-
-    public override void SetInitialConditions(double[,] current) 
-    {
-        //set diagonal and first n elements to 1
-        for (int i = 0; i < Count; i++)
-        {
-            current[0, i] = 1e-8;
-        }
+        derivs[6] = (derivs[0] - derivs[3]) * Math.Exp(-P);
+        derivs[7] = (derivs[1] - derivs[4]) * Math.Exp(-P);
+        derivs[8] = (derivs[2] - derivs[5]) * Math.Exp(-P);
     }
 
     public override string ToString() => 
         string.Format("{0}: a = {1:F1}; b = {2:F1}", Name, a, b);
-
-    public override string ToFileName() =>
-        string.Format("{0}_a={1:F1}_b={2:F1}", Name, a, b);
 }

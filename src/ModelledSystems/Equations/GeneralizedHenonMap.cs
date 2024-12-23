@@ -1,4 +1,5 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Ode;
 
 namespace ModelledSystems.Equations;
 
@@ -6,11 +7,10 @@ namespace ModelledSystems.Equations;
 /// Equations system for 
 /// <see href="https://www.sciencedirect.com/science/article/abs/pii/037596019090283T">Generalized Hénon map</see>.
 /// </summary>
-public class GeneralizedHenonMap : SystemBase
+public class GeneralizedHenonMap : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    protected const int EqCount = 3;
-
-    private double x, y, z;
+    protected double a;
+    protected double b;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneralizedHenonMap"/> class 
@@ -27,22 +27,20 @@ public class GeneralizedHenonMap : SystemBase
     /// </summary>
     /// <param name="a"></param>
     /// <param name="b"></param>
-    public GeneralizedHenonMap(double a, double b) : base(EqCount)
+    public GeneralizedHenonMap(double a, double b)
     {
-        A = a;
-        B = b;
+        this.a = a;
+        this.b = b;
     }
 
-    public double A { get; private set; }
+    public int EqCount { get; } = 3;
+    
+    public string Name { get; } = "Generalized Hénon map";
 
-    public double B { get; private set; }
-
-    public override string Name => "Generalized Hénon map";
-
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
-        A = parameters[0];
-        B = parameters[1];
+        a = parameters[0];
+        b = parameters[1];
     }
 
     /// <summary>
@@ -50,38 +48,20 @@ public class GeneralizedHenonMap : SystemBase
     /// yₙ₊₁ = xₙ<br/>
     /// zₙ₊₁ = yₙ
     /// </summary>
-    /// <param name="current">current solution</param>
+    /// <param name="solution">current solution</param>
     /// <param name="derivs">derivatives</param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[] derivs)
     {
-        x = current[0, 0];
-        y = current[0, 1];
-        z = current[0, 2];
-
-        derivs[0, 0] = A - y * y - B * z;
-        derivs[0, 1] = x;
-        derivs[0, 2] = y;
-    }
-
-    /// <summary>
-    /// [0, 0, 0].
-    /// </summary>
-    /// <param name="current">current solution</param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        for (int i = 0; i < Count; i++)
-        {
-            current[0, i] = 0;
-        }
+        derivs[0] = a - solution[1] * solution[1] - b * solution[2];
+        derivs[1] = solution[0];
+        derivs[2] = solution[1];
     }
 
     public override string ToString() =>
-        string.Format(
-            SysFormat.GetInfoTemplate(Name, "a", "b"),
-            A, B);
+        string.Format(SysFormat.GetInfoTemplate(Name, "a", "b"), 
+            a, b);
 
-    public override string ToFileName() =>
-        string.Format(
-            SysFormat.GetFileTemplate("gen-henon", "a", "b"),
-            A, B);
+    public string ToFileName() =>
+        string.Format(SysFormat.GetFileTemplate("gen-henon", "a", "b"), 
+            a, b);
 }

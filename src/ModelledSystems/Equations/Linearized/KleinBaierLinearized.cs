@@ -1,43 +1,28 @@
-﻿namespace ModelledSystems.Equations.Linearized;
+﻿using ChaosSoft.NumericalMethods.Ode.Linearized;
 
-public class KleinBaierLinearized : KleinBaier
+namespace ModelledSystems.Equations.Linearized;
+
+public sealed class KleinBaierLinearized : KleinBaier, ILinearizedOdeSys
 {
     private double xl, yl, zl, wl;
 
     public KleinBaierLinearized() : base()
     {
-        Rows += EqCount;
     }
 
-    public override string Name => "Klein & Baier (linearized)";
-
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[,] linearization, double[,] derivs)
     {
-        base.GetDerivatives(current, derivs);
-
-        //Linearized equations:
-        for (int i = 0; i < Count; i++)
+        for (int i = 0; i < EqCount; i++)
         {
-            xl = current[1, i];
-            yl = current[2, i];
-            zl = current[3, i];
-            wl = current[4, i];
+            xl = linearization[0, i];
+            yl = linearization[1, i];
+            zl = linearization[2, i];
+            wl = linearization[3, i];
 
-            derivs[1, i] = -yl - A * zl - B * wl;
-            derivs[2, i] = xl;
-            derivs[3, i] = -C * wl - D * 2 * yl * current[0, 1];
-            derivs[4, i] = C * zl - E * wl;
-        }
-    }
-
-    public override void SetInitialConditions(double[,] current)
-    {
-        base.SetInitialConditions(current);
-
-        //set diagonal and first n elements to 1
-        for (int i = 0; i < Count; i++)
-        {
-            current[i + 1, i] = 1;
+            derivs[0, i] = -yl - a * zl - b * wl;
+            derivs[1, i] = xl;
+            derivs[2, i] = -c * wl - d * 2 * yl * solution[1];
+            derivs[3, i] = c * zl - e * wl;
         }
     }
 }

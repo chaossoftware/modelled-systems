@@ -1,24 +1,25 @@
-<config>
+<Config>
 
   <ModelingTask>
-    <TargetSystem>logistic</TargetSystem>
+    <System>logistic</System>
     <Action>signal</Action>
     <Orthogonalization type="mgs" interval="1"/>
     <!-- cgs , mgs , hh -->
-
-    <Output outDir="Output" picWidth="320" picHeight="240" binaryOutput="false"/>
-    <!--picWidth = 384 better for heatmaps-->
   </ModelingTask>
 
+  <Output outDir="Output" binaryOutput="false">
+    <Charts width="320" height="240" scale="5" labelSize="15" tickSize="14" padding="0" grid="false"/>
+  </Output>
+
   <Routines>
-    <Routine name="signal" params=""/>
-    <Routine name="bifurcation" params="0|1000"/>
-    <Routine name="lle" params=""/>
-    <Routine name="lle_sync" iterations="5000" convergeRatio="0.0001" params="5000|0.0001"/>
-    <Routine name="lle_by_param" paramIndex="0" params="0|400"/>
-    <Routine name="le_spec" params=""/>
-    <Routine name="le_spec_map" param1Index="0" param2Index="1" params="0|1|400"/>
-    <Routine name="lyapunov_fractal" paramIndex="0" sequence="AB" params="0|400|AB"/>
+    <Routine name="signal"/>
+    <Routine name="bifurcation" paramIndex="0" iterations="20000"/>
+    <Routine name="lle_benettin"/>
+    <Routine name="lle_sync" convergeRatio="0.0001" iterations="15000"/>
+    <Routine name="lle_by_param" paramIndex="0" iterations="1500"/>
+    <Routine name="le_spec"/>
+    <Routine name="le_spec_map" param1Index="0" param2Index="1" iterations="1100"/>
+    <Routine name="lyap_fractal" paramIndex="0" sequence="AB" iterations="1000"/>
   </Routines>
 
   <Systems>
@@ -27,6 +28,8 @@
 
     <System name="logistic">
       <Solver name="discrete" time="25000" dt="1"/>
+      <InitialConditions>0.1</InitialConditions>
+      <LinearInitialConditions>1</LinearInitialConditions>
       <Parameters>
         <Param name="r" value="4" range="1..4"/>
       </Parameters>
@@ -34,6 +37,8 @@
 
     <System name="henon">
       <Solver name="discrete" time="25000" dt="1"/>
+      <InitialConditions>0 0</InitialConditions>
+      <LinearInitialConditions>1 0; 0 1</LinearInitialConditions>
       <Parameters>
         <Param name="a" value="1.4" range="-0.75..2"/>
         <Param name="b" value="0.3" range="-1.15..1.15"/>
@@ -42,19 +47,23 @@
 
     <System name="tinkerbell">
       <Solver name="discrete" time="25000" dt="1"/>
+      <InitialConditions>-0.72 -0.64</InitialConditions>
+      <LinearInitialConditions>1 0 0; 0 1 0; 0 0 1</LinearInitialConditions>
       <Parameters>
-        <Param name="a" value="0.9" range="-1.8..0.905"/>
-        <Param name="b" value="-0.6013" range="-0.6..0.27"/>
-        <Param name="c" value="2.0" range="-0.201..2.009"/>
-        <Param name="d" value="0.5" range="-1.631..0.503"/>
+        <Param name="a" value="0.9" range="-2..2"/>
+        <Param name="b" value="-0.6013" range="-1..0.3"/>
+        <Param name="c" value="2.0" range="-0.5..3"/>
+        <Param name="d" value="0.5" range="-1..0.5"/>
       </Parameters>
     </System>
 
     <System name="henon_generalized">
       <Solver name="discrete" time="25000" dt="1"/>
+      <InitialConditions>0 0 0</InitialConditions>
+      <LinearInitialConditions>1 0 0; 0 1 0; 0 0 1</LinearInitialConditions>
       <Parameters>
         <Param name="a" value="1.9" range="-0.5..2"/>
-        <Param name="b" value="0.03" range="-1.5..1.5"/>
+        <Param name="b" value="0.03" range="-1.3..1.3"/>
       </Parameters>
     </System>
 
@@ -63,6 +72,8 @@
 
     <System name="lorenz">
       <Solver name="rk4" time="250" dt="0.01"/>
+      <InitialConditions>1 1 1</InitialConditions>
+      <LinearInitialConditions>1 0 0; 0 1 0; 0 0 1</LinearInitialConditions>
       <Parameters>
         <Param name="ϛ" value="10.0" range="0..40"/>
         <Param name="r" value="28.0" range="0..150"/>
@@ -72,15 +83,18 @@
 
     <System name="rossler">
       <Solver name="rk4" time="2500" dt="0.1"/>
+      <InitialConditions>0.01 0.01 0.01</InitialConditions>
+      <LinearInitialConditions>0.01 0 0; 0 0.01 0; 0 0 0.01</LinearInitialConditions>
       <Parameters>
-        <Param name="a" value="0.2" range="0..0.5"/>
-        <Param name="b" value="0.2" range="0..5"/>
-        <Param name="c" value="5.7" range="0..16"/>
+        <Param name="a" value="0.2" range="0..0.6"/>
+        <Param name="b" value="0.2" range="0..7.5"/>
+        <Param name="c" value="5.7" range="0..17"/>
       </Parameters>
     </System>
 
     <System name="thomas">
       <Solver name="rk4" time="250" dt="0.01"/>
+      <InitialConditions>1 0 1</InitialConditions>
       <Parameters>
         <Param name="b" value="0.19" range="0..1"/>
       </Parameters>
@@ -88,6 +102,7 @@
 
     <System name="halvorsen">
       <Solver name="rk4" time="250" dt="0.01"/>
+      <InitialConditions>−1.48 −1.51 2.04</InitialConditions>
       <Parameters>
         <Param name="a" value="1.4" range="0..4"/>
       </Parameters>
@@ -95,6 +110,7 @@
 
     <System name="qi_chen">
       <Solver name="rk4" time="250" dt="0.01"/>
+      <InitialConditions>1 1 1</InitialConditions>
       <Parameters>
         <Param name="α" value="38" range="10..56"/>
         <Param name="β" value="8/3" range="0..5"/>
@@ -104,6 +120,7 @@
 
     <System name="chua">
       <Solver name="rk4" time="250" dt="0.01"/>
+      <InitialConditions>0.7 0 0</InitialConditions>
       <Parameters>
         <Param name="α" value="15.6" range="4..40"/>
         <Param name="β" value="1" range="0..5"/>
@@ -115,6 +132,7 @@
 
     <System name="stankevich">
       <Solver name="rk4" time="250" dt="0.01"/>
+      <InitialConditions>0.01 0.01 0.01</InitialConditions>
       <Parameters>
         <Param name="α" value="9" range="NaN..NaN"/>
         <Param name="β" value="0.016" range="NaN..NaN"/>
@@ -126,6 +144,8 @@
 
     <System name="charo">
       <Solver name="rk4" time="250" dt="0.01"/>
+      <InitialConditions>0.2 0 0 pi/50</InitialConditions>
+      <!-- 0.2, 0, 0, ωη -->
       <Parameters>
         <Param name="A" value="0.1" range="-2.5..2.5"/>
         <Param name="η" value="0.1" range="-2.5..2.5"/>
@@ -134,12 +154,15 @@
     </System>
 
     <System name="henon_heiles">
-      <Solver name="rk4" time="250" dt="0.01"/>
+      <Solver name="rk4" time="250" dt="0.05"/>
+      <InitialConditions>0 0.478 -0.15 0</InitialConditions>
+      <LinearInitialConditions>0.1 0 0 0; 0 0.1 0 0; 0 0 0.1 0; 0 0 0 0.1</LinearInitialConditions>
       <Parameters/>
     </System>
 
     <System name="anischenko_nikolaev">
       <Solver name="rk4" time="250" dt="0.01"/>
+      <InitialConditions>1 1 1 1</InitialConditions>
       <Parameters>
         <Param name="α" value="0.2" range="0..0.5"/>
         <Param name="β" value="0.43" range="0..2.5"/>
@@ -150,15 +173,17 @@
 
     <System name="klein_baier">
       <Solver name="rk4" time="250" dt="0.01"/>
+      <InitialConditions>-0.157 -0.043 3.113 1.826</InitialConditions>
+      <LinearInitialConditions>1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1</LinearInitialConditions>
       <Parameters>
-        <Param name="a" value="0.15" range="NaN..NaN"/>
-        <Param name="b" value="0.25" range="NaN..NaN"/>
-        <Param name="c" value="0.1" range="NaN..NaN"/>
-        <Param name="d" value="0.3922" range="NaN..NaN"/>
-        <Param name="e" value="0.05" range="NaN..NaN"/>
+        <Param name="a" value="0.15" range="0..1"/>
+        <Param name="b" value="0.25" range="0..0.27"/>
+        <Param name="c" value="0.1" range="0.1..0.42"/>
+        <Param name="d" value="0.3922" range="0..0.4"/>
+        <Param name="e" value="0.05" range="0.042..0.07"/>
       </Parameters>
     </System>
 
   </Systems>
 
-</config>
+</Config>

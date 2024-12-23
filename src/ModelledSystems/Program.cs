@@ -1,111 +1,93 @@
-﻿using ModelledSystems.Routines;
+﻿using ModelledSystems.Configuration;
+using ModelledSystems.Routines;
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Xml.Serialization;
 
-namespace ModelledSystems
+namespace ModelledSystems;
+
+internal class Program
 {
-    internal class Program
+    private const string ConfigFile = "systems_config.xml";
+
+    private readonly Config _config;
+    private readonly string _outDir;
+
+    public Program()
     {
-        private readonly Parameters _params;
-        private readonly string _outDir;
-        private readonly Size _size;
-
-        public Program()
-        {
-            _params = new Parameters();
-            _outDir = Path.Combine(_params.OutDir, _params.System);
-            _size = _params.PicSize;
-        }
-
-        public static void Main(string[] args)
-        {
-            Console.OutputEncoding = System.Text.Encoding.Unicode;
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-
-            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-            Console.WriteLine($"Version: {versionInfo.ProductVersion}");
-
-            var program = new Program();
-
-            program.Init();
-            program.PerformAction();
-        }
-
-        private void Init()
-        {
-            if (!Directory.Exists(_outDir))
-            {
-                Directory.CreateDirectory(_outDir);
-            }
-
-            Console.Title = _params.System + ": " + _params.Action;
-        }
-
-        private void PerformAction()
-        {
-            Console.WriteLine("Processing task...");
-            Stopwatch timer = Stopwatch.StartNew();
-
-            GetRoutine().Run();
-
-            Console.WriteLine(new string('_', Console.BufferWidth));
-            Console.WriteLine("Elapsed time: " + timer.Elapsed.ToString("mm\\:ss\\.fff"));
-            Console.Read();
-        }
-
-        private Routine GetRoutine()
-        {
-            Routine routine;
-            switch (_params.Action.ToLower())
-            {
-                case "signal":
-                    routine = new SystemOut(_outDir, _params.SystemParameters, _params.BinOutput);
-                    break;
-                case "le_spec":
-                    routine = new BenettinSpectrum(_outDir, _params.SystemParameters, _params.Orthogonalization, _params.Iterations);
-                    break;
-                case "lle":
-                    routine = new BenettinLLE(_outDir, _params.SystemParameters);
-                    break;
-                case "lle_by_param":
-                    int paramIndexLle = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    int paramIterations = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
-                    routine = new BenettinLLEParam(_outDir, _params.SystemParameters, paramIndexLle, paramIterations);
-                    break;
-                case "le_spec_map":
-                    int mapX = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    int mapY = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
-                    int mapParamIterations = Convert.ToInt32(_params.ActionParams.Split('|')[2]);
-                    routine = new LesMap(_outDir, _params.SystemParameters, mapX, mapY, mapParamIterations);
-                    break;
-                case "bifurcation":
-                    int paramIndex = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    int paramIterationsB = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
-                    routine = new Bifurcation(_outDir, _params.SystemParameters, paramIndex, paramIterationsB);
-                    break;
-                case "lle_sync":
-                    int p = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    double pstep = Convert.ToDouble(_params.ActionParams.Split('|')[1]);
-                    routine = new SynchronizationLLE(_outDir, _params.SystemParameters, p, pstep);
-                    break;
-                case "lyapunov_fractal":
-                    int lefParamIndex = Convert.ToInt32(_params.ActionParams.Split('|')[0]);
-                    int lefIterations = Convert.ToInt32(_params.ActionParams.Split('|')[1]);
-                    string sequence = _params.ActionParams.Split('|')[2];
-                    routine = new LeFractal(_outDir, _params.SystemParameters, lefParamIndex, lefIterations, sequence);
-                    break;
-                default:
-                    return null;
-            }
-
-            routine.Size = _size;
-            return routine;
-        }
+        XmlSerializer serializer = new(typeof(Config));
+        using FileStream fs = new(ConfigFile, FileMode.Open);
+        _config = (Config)serializer.Deserialize(fs);
+        _outDir = Path.Combine(_config.Out.Dir, _config.Task.System);
     }
+    
+    public static void Main(string[] args)
+    {
+        Console.OutputEncoding = System.Text.Encoding.Unicode;
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+        Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+        FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+        Console.WriteLine($"Version: {versionInfo.ProductVersion}");
+
+        var program = new Program();
+
+        program.Init();
+        program.PerformAction();
+    }
+
+    private void Init()
+    {
+        if (!Directory.Exists(_outDir))
+        {
+            Directory.CreateDirectory(_outDir);
+        }
+
+        Console.Title = _config.Task.System + ": " + _config.Task.Action;
+    }
+
+    private void PerformAction()
+    {
+        Console.WriteLine("Processing task...");
+        Stopwatch timer = Stopwatch.StartNew();
+
+        Routine routine = GetRoutine();
+        routine.ChartsConfig = _config.Out.Charts;
+        routine.Run();
+
+        Console.WriteLine(new string('_', Console.BufferWidth));
+        Console.WriteLine("Elapsed time: " + timer.Elapsed.ToString("mm\\:ss\\.fff"));
+        Console.Read();
+    }
+
+    private Routine GetRoutine() =>
+        _config.Task.Action.ToLowerInvariant() switch
+        {
+            "signal" => new SystemOut(_outDir, _config.System, _config.Out.BinOutput),
+            "bifurcation" => new Bifurcation(_outDir, _config.System,
+                                _config.Routine.GetInt("paramIndex"),
+                                _config.Routine.GetInt("iterations")),
+            "lle_benettin" => new Lle(_outDir, _config.System),
+            "lle_sync" => new LleSync(_outDir, _config.System,
+                                _config.Routine.GetInt("iterations"),
+                                _config.Routine.GetDouble("convergeRatio")),
+            "lle_by_param" => new LleParam(_outDir, _config.System,
+                                _config.Routine.GetInt("paramIndex"),
+                                _config.Routine.GetInt("iterations")),
+            "le_spec" => new LeSpec(_outDir, _config.System, _config.Task.Orthogonalization),
+            "le_spec_map" => new LeSpecMap(_outDir, _config.System,
+                                _config.Routine.GetInt("param1Index"),
+                                _config.Routine.GetInt("param2Index"),
+                                _config.Routine.GetInt("iterations"),
+                                _config.Task.Orthogonalization),
+            "lyap_fractal" => new LeFractal(_outDir, _config.System,
+                                _config.Routine.GetInt("paramIndex"),
+                                _config.Routine.GetInt("iterations"),
+                                _config.Routine.GetString("sequence")),
+            _ => null,
+        };
 }

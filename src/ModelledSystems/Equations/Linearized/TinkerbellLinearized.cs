@@ -1,48 +1,31 @@
-﻿namespace ModelledSystems.Equations.Linearized;
+﻿using ChaosSoft.NumericalMethods.Ode.Linearized;
 
-public class TinkerbellLinearized : TinkerbellMap
+namespace ModelledSystems.Equations.Linearized;
+
+public sealed class TinkerbellLinearized : TinkerbellMap, ILinearizedOdeSys
 {
     private double xl, yl;
 
     public TinkerbellLinearized() : base()
     {
-        Rows += EqCount;
     }
 
     public TinkerbellLinearized(double a, double b, double c, double d) : base(a, b, c, d)
     {
-        Rows += EqCount;
     }
 
-    public override string Name => "Tinkerbell (linearized)";
-
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[,] linearization, double[,] derivs)
     {
-        base.GetDerivatives(current, derivs);
+        double xMul2 = 2 * solution[0];
+        double yMul2 = 2 * solution[1];
 
-        double xMul2 = 2 * current[0, 0];
-        double yMul2 = 2 * current[0, 1];
-
-        //Linearized Tinkerbell map equations:
-        for (int i = 0; i < Count; i++)
+        for (int i = 0; i < EqCount; i++)
         {
-            xl = current[1, i];
-            yl = current[2, i];
+            xl = linearization[0, i];
+            yl = linearization[1, i];
 
-            derivs[1, i] = xMul2 * xl + A * xl - yMul2 * yl + B * yl;
-            derivs[2, i] = yMul2 * xl + C * xl + xMul2 * yl + D * yl;
-        }
-    }
-
-    public override void SetInitialConditions(double[,] current)
-    {
-        base.SetInitialConditions(current);
-
-        //set diagonal and first n elements to 1
-        for (int i = 0; i < Count; i++)
-        {
-            //for linearized maps
-            current[i + 1, i] = 1.0;
+            derivs[0, i] = xMul2 * xl + a * xl - yMul2 * yl + b * yl;
+            derivs[1, i] = yMul2 * xl + c * xl + xMul2 * yl + d * yl;
         }
     }
 }

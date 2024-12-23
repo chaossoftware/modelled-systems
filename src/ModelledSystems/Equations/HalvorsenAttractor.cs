@@ -1,4 +1,5 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Ode;
 
 namespace ModelledSystems.Equations;
 
@@ -6,12 +7,9 @@ namespace ModelledSystems.Equations;
 /// Equations system for 
 /// <see href="https://www.vorillaz.com/halvorsen-attractor/">Halvorsen attractor</see>.
 /// </summary>
-public class HalvorsenAttractor : SystemBase
+public class HalvorsenAttractor : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    protected const int EqCount = 3;
-
-    private double x, y, z;
-    private double xMul4, yMul4, zMul4;
+    private double a;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HalvorsenAttractor"/> class 
@@ -27,18 +25,18 @@ public class HalvorsenAttractor : SystemBase
     /// with specific system parameters values.
     /// </summary>
     /// <param name="a"></param>
-    public HalvorsenAttractor(double a) : base(EqCount)
+    public HalvorsenAttractor(double a)
     {
-        A = a;
+        this.a = a;
     }
 
-    public double A { get; private set; }
+    public int EqCount { get; } = 3;
 
-    public override string Name => "Halvorsen attractor";
+    public string Name { get; } = "Halvorsen attractor";
 
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
-        A = parameters[0];
+        a = parameters[0];
     }
 
     /// <summary>
@@ -48,39 +46,28 @@ public class HalvorsenAttractor : SystemBase
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[] derivs)
     {
-        x = current[0, 0];
-        y = current[0, 1];
-        z = current[0, 2];
+        double x = solution[0];
+        double y = solution[1];
+        double z = solution[2];
 
-        xMul4 = x * 4;
-        yMul4 = y * 4;
-        zMul4 = z * 4;
+        double xMul4 = x * 4;
+        double yMul4 = y * 4;
+        double zMul4 = z * 4;
 
-        derivs[0, 0] = -A * x - yMul4 - zMul4 - y * y;
-        derivs[0, 1] = -A * y - zMul4 - xMul4 - z * z;
-        derivs[0, 2] = -A * z - xMul4 - yMul4 - x * x;
-    }
-
-    /// <summary>
-    /// [−1.48, −1.51, 2.04].
-    /// </summary>
-    /// <param name="current">current solution</param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        current[0, 0] = -1.48;
-        current[0, 1] = -1.51;
-        current[0, 2] = 2.04;
+        derivs[0] = -a * x - yMul4 - zMul4 - y * y;
+        derivs[1] = -a * y - zMul4 - xMul4 - z * z;
+        derivs[2] = -a * z - xMul4 - yMul4 - x * x;
     }
 
     public override string ToString() =>
         string.Format(
             SysFormat.GetInfoTemplate(Name, "a"),
-            A);
+            a);
 
-    public override string ToFileName() =>
+    public string ToFileName() =>
         string.Format(
             SysFormat.GetFileTemplate("halvorsen", "a"),
-            A);
+            a);
 }

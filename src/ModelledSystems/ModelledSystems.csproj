@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ChaosSoft.NumericalMethods" Version="1.0.0" />
-    <PackageReference Include="ScottPlot" Version="4.1.52" />
+    <PackageReference Include="ChaosSoft.NumericalMethods" Version="2.0.0" />
+    <PackageReference Include="ScottPlot" Version="4.1.74" />
   </ItemGroup>
 
 </Project>

@@ -1,50 +1,51 @@
-﻿using ChaosSoft.Core.IO;
-using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.Core.IO;
+using ChaosSoft.NumericalMethods.Ode;
+using ChaosSoft.NumericalMethods.Transform;
+using ModelledSystems.Configuration;
+using ScottPlot;
 using System.Drawing;
-using System.IO;
 using System.Text;
 
 namespace ModelledSystems.Routines;
 
-internal class SystemOut : Routine
+internal sealed class SystemOut : Routine
 {
-    private readonly long _totalIterations;
-    private readonly int _eqN;
-    private readonly double _eqStep;
-    private readonly double[][] outArray;
-    private readonly SystemBase equations;
-    private SolverBase solver;
+    private readonly long _iterations;
+    private readonly double _dt;
+    private readonly double[][] _output;
+    private readonly IOdeSys _equations;
+    private readonly OdeSolverBase _solver;
     private readonly bool _binaryOutput;
 
-    public SystemOut(string outDir, SystemParameters sysParams, bool binaryOutput) : base (outDir, sysParams)
+    public SystemOut(string outDir, SystemCfg sysParams, bool binaryOutput) : base (outDir, sysParams)
     {
         _binaryOutput = binaryOutput;
-        _eqStep = SysParameters.Step;
+        _dt = sysParams.Solver.Dt;
+        _equations = GetSystemEquations(sysParams.ParamsValues);
+        _iterations = (long)(sysParams.Solver.ModellingTime / _dt) + 1;
 
-        equations = GetSystemEquations(SysParameters.Defaults);
-        _eqN = equations.Count;
+        _output = new double[_equations.EqCount][];
         
-        _totalIterations = (long)(SysParameters.ModellingTime / _eqStep) + 1;
-
-        outArray = new double[_eqN][];
-        
-        for (int i = 0; i < outArray.Length; i++)
+        for (int i = 0; i < _equations.EqCount; i++)
         {
-            outArray[i] = new double[_totalIterations];
+            _output[i] = new double[_iterations];
         }
 
-        solver = GetSolver(sysParams.Solver, equations, _eqStep);
+        _solver = GetSolver(_equations);
     }
 
     public override void Run()
     {
-        for (int i = 0; i < _totalIterations; i++)
-        {
-            solver.NexStep();
+        _solver.SetInitialConditions(0, SysConfig.InitialConditions);
 
-            for (int k = 0; k < _eqN; k++)
+        for (int i = 0; i < _iterations; i++)
+        {
+            _solver.NextStep();
+
+            for (int k = 0; k < _equations.EqCount; k++)
             {
-                outArray[k][i] = solver.Solution[0, k];
+                _output[k][i] = _solver.Solution[k];
             }
         }
 
@@ -53,51 +54,62 @@ internal class SystemOut : Routine
 
     private void WriteResults()
     {
-        StringBuilder output = new StringBuilder();
+        string baseFilePath = GetBaseFilePath(_equations, _dt);
 
-        string fileNameStart = Path.Combine(OutDir, equations.ToFileName() + $"_st={_eqStep:0.###}");
+        StringBuilder output = new();
 
-        double[] xt = new double[_totalIterations];
-        double[] yt = new double[_totalIterations];
-        double[] zt = new double[_totalIterations];
+        double[] xt = new double[_iterations];
+        double[] yt = new double[_iterations];
+        double[] zt = new double[_iterations];
 
         double t = 0;
+        int eqN = _equations.EqCount;
 
-        for (int cnt = 0; cnt < _totalIterations; cnt++)
+        for (int cnt = 0; cnt < _iterations; cnt++)
         {
-            output.AppendFormat("{0:F5}", t);
+            output.Append(NumFormat.Format(t, Constants.TimeOutput));
 
-            for (int k = 0; k < _eqN; k++)
+            for (int k = 0; k < eqN; k++)
             {
-                output.AppendFormat("\t{0:F15}", outArray[k][cnt]);
+                output.Append(Constants.ColumnDelimiter)
+                    .Append(NumFormat.Format(_output[k][cnt], Constants.LongOutput));
             }
 
             output.AppendLine();
 
-            xt[cnt] = outArray[0][cnt];
-            yt[cnt] = _eqN > 1 ? outArray[1][cnt] : 1;
-            zt[cnt] = _eqN > 2 ? outArray[2][cnt] : 1;
+            xt[cnt] = _output[0][cnt];
+            yt[cnt] = eqN > 1 ? _output[1][cnt] : 0;
+            zt[cnt] = eqN > 2 ? _output[2][cnt] : 0;
 
-            t += _eqStep;
+            t += _dt;
         }
 
-        if(_eqN > 1)
+        if (eqN > 1)
         {
-            var plt = GetPlot("x", "y");
-            plt.AddScatterPoints(xt, yt, Color.Blue, 1);
-            plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_attractor.png"));
+            Plot attractorPlot = GetPlot("x", "y");
+
+            if (_solver is DiscreteSolver)
+            {
+                attractorPlot.AddScatterPoints(xt, yt, Color.Blue, 0.5f);
+            }
+            else
+            {
+                attractorPlot.AddScatterLines(xt, yt, Color.Blue, 0.25f);
+            }
+
+            SavePlot(attractorPlot, baseFilePath + "_attractor.png");
         }
-        
+
         if (_binaryOutput)
         {
-            DataWriter.CreateBytesDataFile(fileNameStart + ".dat", outArray);
+            new BinaryDataFileWriter().WriteData(baseFilePath + ".bin", _output);
         }
         else
         {
-            DataWriter.CreateDataFile(fileNameStart + ".dat", output.ToString());
+            FileUtils.CreateDataFile(baseFilePath + ".dat", output.ToString());
         }
 
-        Model3D.Create3daModelFile(fileNameStart + ".3da", xt, yt, zt);
-        Sound.CreateWavFile(fileNameStart + ".wav", yt);
+        Model3D.Create3daModelFile(baseFilePath + ".3da", xt, yt, zt);
+        Sound.CreateWavFile(baseFilePath + ".wav", xt);
     }
 }

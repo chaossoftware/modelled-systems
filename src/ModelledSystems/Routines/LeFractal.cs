@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Drawing;
-using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ChaosSoft.Core.DataUtils;
-using ChaosSoft.NumericalMethods.Equations;
+using ChaosSoft.NumericalMethods.Ode;
 using ChaosSoft.NumericalMethods.Lyapunov;
+using ScottPlot;
+using ModelledSystems.Configuration;
 
 namespace ModelledSystems.Routines;
 
-internal class LeFractal : Routine
+internal sealed class LeFractal : Routine
 {
     private readonly int _paramIndex;
     private readonly string _sequence;
@@ -16,18 +17,18 @@ internal class LeFractal : Routine
 
     private readonly TaskProgress _progress;
     private readonly int _iterations;
-    private readonly Parameter _parameter;
+    private readonly SysParamCfg _parameter;
     private readonly double _step;
 
-    public LeFractal(string outDir, SystemParameters systemParameters, int paramIndex, int iterations, string sequence) 
-        : base(outDir, systemParameters)
+    public LeFractal(string outDir, SystemCfg sysConfig, int paramIndex, int iterations, string sequence) 
+        : base(outDir, sysConfig)
     {
         _paramIndex = paramIndex;
         _sequence = sequence;
 
-        _parameter = SysParameters.ListParameters[paramIndex];
+        _parameter = SysConfig.Params[paramIndex];
         _iterations = iterations;
-        _step = (_parameter.End - _parameter.Start) / _iterations;
+        _step = (_parameter.To - _parameter.From) / _iterations;
         _progress = new TaskProgress(_iterations * _iterations);
 
         _arr = new double[_iterations, _iterations];
@@ -42,20 +43,16 @@ internal class LeFractal : Routine
 
     private void GetImage()
     {
-        var plt = new ScottPlot.Plot(Size.Width, Size.Height);
+        Plot fractalPlot = GetPlot(_parameter.Name, _parameter.Name);
         
-        plt.XAxis.Label(_parameter.Name);
-        plt.YAxis.Label(_parameter.Name);
-
         //int maxPositiveLeIndex = (int)Matrixes.Max(_arr);
         //int minLeIndex = (int)Matrixes.Min(_arr);
         MakeGradient();
 
-        var hm = plt.AddHeatmap(_arr, ScottPlot.Drawing.Colormap.Topo, lockScales: false);
+        var hm = fractalPlot.AddHeatmap(_arr, ScottPlot.Drawing.Colormap.Topo, lockScales: false);
         //var cb = plt.AddColorbar(hm);
         hm.Smooth = true;
-        plt.Margins(0, 0);
-
+        fractalPlot.Margins(0, 0);
 
         //double[] ticks = Arrays.GenerateUniformArray(maxPositiveLeIndex + 1, minLeIndex, 1d);
 
@@ -64,11 +61,13 @@ internal class LeFractal : Routine
         //    ticks.Select(t => t.ToString()).ToArray(), 
         //    min: minLeIndex, 
         //    max: maxPositiveLeIndex);
+        double[] positions = new double[] { 0, _iterations };
+        string[] labels = new string[] { _parameter.From.ToString(), _parameter.To.ToString() };
 
-        plt.XTicks(new double[] { 0, _iterations }, new string[] { _parameter.Start.ToString(), _parameter.End.ToString() });
-        plt.YTicks(new double[] { 0, _iterations }, new string[] { _parameter.Start.ToString(), _parameter.End.ToString() });
+        fractalPlot.XTicks(positions, labels);
+        fractalPlot.YTicks(positions, labels);
 
-        plt.SaveFig(Path.Combine(OutDir, SysParameters.SystemName + "_lyapunov_fractal.png"));
+        SavePlot(fractalPlot, FileNameBase + "_lyap_fractal.png");
     }
 
     public void Func(int z)
@@ -76,17 +75,22 @@ internal class LeFractal : Routine
         int x = z / _iterations;
         int y = z % _iterations;
 
-        double firstValue = _parameter.Start + x * _step;
-        double secondValue = _parameter.Start + y * _step;
-        double[] vars = new double[SysParameters.Defaults.Length];
-        Array.Copy(SysParameters.Defaults, vars, vars.Length);
+        double firstValue = _parameter.From + x * _step;
+        double secondValue = _parameter.From + y * _step;
 
-        SystemBase equations = GetLinearizedSystemEquations(vars);
-        Type solverType = GetSolverType(SysParameters.Solver);
-        double eqStep = SysParameters.Step;
-        long totIter = (long)(SysParameters.ModellingTime / eqStep);
+        double[] vars = SysConfig.ParamsValues.ToArray();
 
-        LleBenettin benettin = new LleBenettin(equations, solverType, eqStep, totIter);
+        IOdeSys equations = GetSystemEquations(vars);
+        double eqStep = SysConfig.Solver.Dt;
+        long totIter = (long)(SysConfig.Solver.ModellingTime / eqStep);
+
+        OdeSolverBase solver = SolverFactory.Get(SysConfig.Solver.Type, equations, eqStep);
+        OdeSolverBase solverCopy = SolverFactory.Get(SysConfig.Solver.Type, equations, eqStep);
+        solver.SetInitialConditions(0, SysConfig.InitialConditions);
+        solverCopy.SetInitialConditions(0, SysConfig.InitialConditions);
+
+        LleBenettin benettin = new(solver, solverCopy, totIter);
+        benettin.MakeInitialConditionsDifference();
 
         for (int i = 0; i < totIter; i++)
         {
@@ -94,7 +98,7 @@ internal class LeFractal : Routine
             //TODO determine vars
 
             vars[_paramIndex] = val;
-            equations.SetParameters(vars);
+            (equations as IHasParameters).SetParameters(vars);
             benettin.MakeIteration();
         }
 

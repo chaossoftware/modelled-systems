@@ -1,4 +1,5 @@
-﻿using ChaosSoft.NumericalMethods.Equations;
+﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Ode;
 
 namespace ModelledSystems.Equations;
 
@@ -6,11 +7,11 @@ namespace ModelledSystems.Equations;
 /// Equations system for 
 /// <see href="https://en.wikipedia.org/wiki/Lorenz_system">Lorenz attractor</see>.
 /// </summary>
-public class LorenzAttractor : SystemBase
+public class LorenzAttractor : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    protected const int EqCount = 3;
-
-    private double x, y, z;
+    protected double sg;
+    protected double r;
+    protected double b;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LorenzAttractor"/> class 
@@ -28,26 +29,22 @@ public class LorenzAttractor : SystemBase
     /// <param name="sg"></param>
     /// <param name="r"></param>
     /// <param name="b"></param>
-    public LorenzAttractor(double sg, double r, double b) : base(EqCount)
+    public LorenzAttractor(double sg, double r, double b)
     {
-        Sg = sg;
-        R = r;
-        B = b;
+        this.sg = sg;
+        this.r = r;
+        this.b = b;
     }
 
-    public double Sg { get; private set; }
+    public int EqCount { get; } = 3;
 
-    public double R { get; private set; }
+    public virtual string Name { get; } = "Lorenz system";
 
-    public double B { get; private set; }
-
-    public override string Name => "Lorenz system";
-
-    public override void SetParameters(params double[] parameters)
+    public void SetParameters(params double[] parameters)
     {
-        Sg = parameters[0];
-        R = parameters[1];
-        B = parameters[2];
+        sg = parameters[0];
+        r = parameters[1];
+        b = parameters[2];
     }
 
     /// <summary>
@@ -57,36 +54,24 @@ public class LorenzAttractor : SystemBase
     /// </summary>
     /// <param name="current">current solution</param>
     /// <param name="derivs">derivatives</param>
-    public override void GetDerivatives(double[,] current, double[,] derivs)
+    public void F(double t, double[] solution, double[] derivs)
     {
-        x = current[0, 0];
-        y = current[0, 1];
-        z = current[0, 2];
+        double x = solution[0];
+        double y = solution[1];
+        double z = solution[2];
 
-        derivs[0, 0] = Sg * (y - x);
-        derivs[0, 1] = x * (R - z) - y;
-        derivs[0, 2] = x * y - B * z;
-    }
-
-    /// <summary>
-    /// [1, 1, 1].
-    /// </summary>
-    /// <param name="current">current solution</param>
-    public override void SetInitialConditions(double[,] current)
-    {
-        for (int i = 0; i < Count; i++)
-        {
-            current[0, i] = 1;
-        }
+        derivs[0] = sg * (y - x);
+        derivs[1] = x * (r - z) - y;
+        derivs[2] = x * y - b * z;
     }
 
     public override string ToString() =>
         string.Format(
             SysFormat.GetInfoTemplate(Name, "ϛ", "r", "b"),
-            Sg, R, B);
+            sg, r, b);
 
-    public override string ToFileName() =>
+    public string ToFileName() =>
         string.Format(
             SysFormat.GetFileTemplate("lorenz", "sg", "r", "b"),
-            Sg, R, B);
+            sg, r, b);
 }

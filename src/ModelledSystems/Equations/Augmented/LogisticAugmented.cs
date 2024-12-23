@@ -1,59 +1,42 @@
 ﻿using ChaosSoft.Core;
+using ChaosSoft.NumericalMethods.Algebra;
 using System;
 
 namespace ModelledSystems.Equations.Augmented;
-
 
 /// <summary>
 /// Henon system equations
 /// 2 linear and 4 non-linear equations
 /// </summary>
-public class LogisticAugmented : AugmentedEquations
+public sealed class LogisticAugmented : IAugmentedEquations, IHasName, IHasParameters
 {
-    protected const int EqCount = 3;
-
     private double a = 4;
 
-    public LogisticAugmented() : base(EqCount)
+    public LogisticAugmented()
     {
     }
 
-    public LogisticAugmented(double a) : base(EqCount)
-    {
-        this.a = a;
-    }
+    public int EqCount { get; } = 3;
 
-    public override string Name => "Logistic Map Augmented";
+    public string Name { get; } = "Logistic Map Augmented";
 
-    public override void SetParameters(params double[] parameters)
+    public double P { get; set; } = 0;
+
+    public void SetParameters(params double[] parameters)
     {
         a = parameters[0];
     }
 
-    public override void GetDerivatives(double[,] current, double[,] derivs) 
+    public void F(double t, double[] solution, double[] derivs)
     {
-        double x00 = current[0, 1] + current[0, 2];
+        double x00 = solution[1] + solution[2];
 
         //Nonlinear Logistic map equations:
-        derivs[0, 0] = a * x00 - a * FastMath.Pow2(x00);
-        derivs[0, 1] = a * current[0, 1] * (1 - current[0, 1]);
-        derivs[0, 2] = (derivs[0, 0] - derivs[0, 1]) * Math.Exp(-p);
+        derivs[0] = a * x00 - a * Numbers.FastPow2(x00);
+        derivs[1] = a * solution[1] * (1 - solution[1]);
+        derivs[2] = (derivs[0] - derivs[1]) * Math.Exp(-P);
     }
-
-
-    public override void SetInitialConditions(double[,] current) 
-    {
-        //set diagonal and first n elements to 1
-        for (int i = 0; i < Count; i++) 
-        {
-            current[0, i] = 1e-8;
-        }
-    }
-
 
     public override string ToString() =>
-        throw new NotImplementedException();
-
-    public override string ToFileName() =>
         throw new NotImplementedException();
 }
