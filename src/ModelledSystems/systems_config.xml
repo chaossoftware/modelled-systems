@@ -13,12 +13,12 @@
 
   <Routines>
     <Routine name="signal"/>
-    <Routine name="bifurcation" paramIndex="0" iterations="5000"/>
+    <Routine name="bifurcation" paramIndex="0" iterations="20000"/>
     <Routine name="lle_benettin"/>
     <Routine name="lle_sync" convergeRatio="0.0001" iterations="15000"/>
-    <Routine name="lle_by_param" paramIndex="0" iterations="500"/>
+    <Routine name="lle_by_param" paramIndex="0" iterations="1500"/>
     <Routine name="le_spec"/>
-    <Routine name="le_spec_map" param1Index="0" param2Index="1" iterations="1000"/>
+    <Routine name="le_spec_map" param1Index="0" param2Index="1" iterations="1100"/>
     <Routine name="lyap_fractal" paramIndex="0" sequence="AB" iterations="1000"/>
   </Routines>
 
@@ -86,9 +86,9 @@
       <InitialConditions>0.01 0.01 0.01</InitialConditions>
       <LinearInitialConditions>0.01 0 0; 0 0.01 0; 0 0 0.01</LinearInitialConditions>
       <Parameters>
-        <Param name="a" value="0.2" range="0..0.8"/>
-        <Param name="b" value="0.2" range="1..15"/>
-        <Param name="c" value="5.7" range="0..16"/>
+        <Param name="a" value="0.2" range="0..0.6"/>
+        <Param name="b" value="0.2" range="0..7.5"/>
+        <Param name="c" value="5.7" range="0..17"/>
       </Parameters>
     </System>
 
@@ -144,7 +144,8 @@
 
     <System name="charo">
       <Solver name="rk4" time="250" dt="0.01"/>
-      <InitialConditions>0.2 0 0 pi/50</InitialConditions> <!-- 0.2, 0, 0, ωη -->
+      <InitialConditions>0.2 0 0 pi/50</InitialConditions>
+      <!-- 0.2, 0, 0, ωη -->
       <Parameters>
         <Param name="A" value="0.1" range="-2.5..2.5"/>
         <Param name="η" value="0.1" range="-2.5..2.5"/>
