@@ -2,6 +2,7 @@
 using ChaosSoft.Core.IO;
 using ChaosSoft.NumericalMethods.Ode;
 using ChaosSoft.NumericalMethods.Transform;
+using ModelledSystems.Configuration;
 using ScottPlot;
 using System.Drawing;
 using System.Text;
@@ -89,11 +90,11 @@ internal sealed class SystemOut : Routine
 
             if (_solver is DiscreteSolver)
             {
-                attractorPlot.AddScatterPoints(xt, yt, Color.Blue, 1);
+                attractorPlot.AddScatterPoints(xt, yt, Color.Blue, 0.5f);
             }
             else
             {
-                attractorPlot.AddScatterLines(xt, yt, Color.Blue, 1);
+                attractorPlot.AddScatterLines(xt, yt, Color.Blue, 0.25f);
             }
 
             SavePlot(attractorPlot, baseFilePath + "_attractor.png");

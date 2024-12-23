@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ScottPlot;
 using ChaosSoft.NumericalMethods.Algebra;
+using ModelledSystems.Configuration;
 
 namespace ModelledSystems.Routines;
 

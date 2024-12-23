@@ -1,6 +1,7 @@
 ﻿using ChaosSoft.Core.Data;
 using ChaosSoft.Core.IO;
 using ChaosSoft.NumericalMethods.Ode;
+using ModelledSystems.Configuration;
 using ScottPlot;
 using System;
 using System.Collections.Concurrent;

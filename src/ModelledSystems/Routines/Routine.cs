@@ -3,6 +3,7 @@ using System.IO;
 using ChaosSoft.NumericalMethods.Ode;
 using ChaosSoft.NumericalMethods.Ode.Linearized;
 using ChaosSoft.NumericalMethods.QrDecomposition;
+using ModelledSystems.Configuration;
 using ModelledSystems.Equations;
 using ModelledSystems.Equations.Linearized;
 using ScottPlot;

@@ -2,6 +2,7 @@
 using ChaosSoft.NumericalMethods.Lyapunov;
 using ChaosSoft.Core.Logging;
 using ChaosSoft.Core;
+using ModelledSystems.Configuration;
 
 namespace ModelledSystems.Routines;
 

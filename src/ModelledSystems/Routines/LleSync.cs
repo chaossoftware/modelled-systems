@@ -2,6 +2,7 @@
 using ChaosSoft.Core.Data;
 using ChaosSoft.Core.DataUtils;
 using ChaosSoft.Core.Logging;
+using ModelledSystems.Configuration;
 using ModelledSystems.Equations.Augmented;
 using ScottPlot;
 using ScottPlot.Plottable;
@@ -62,7 +63,8 @@ internal sealed class LleSync : Routine
         Plot leSyncPlot = GetPlot("p", "Δ");
         leSyncPlot.AddScatterPoints(_syncSeries.XValues, _syncSeries.YValues, Color.Blue, 0.25f);
         leSyncPlot.AddVerticalLine(lle, Color.IndianRed, 1, LineStyle.DashDot);
-        Annotation annotation = leSyncPlot.AddAnnotation(result, 0, 0);
+        leSyncPlot.SetAxisLimitsX(0, lle * 1.1);
+        Annotation annotation = leSyncPlot.AddAnnotation(result, Alignment.UpperLeft);
         annotation.Shadow = false;
 
         SavePlot(leSyncPlot, FileNameBase + "_lle_sync.png");

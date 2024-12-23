@@ -3,6 +3,7 @@ using ChaosSoft.Core.Logging;
 using ChaosSoft.NumericalMethods.Lyapunov;
 using ChaosSoft.NumericalMethods.Ode.Linearized;
 using ChaosSoft.NumericalMethods.QrDecomposition;
+using ModelledSystems.Configuration;
 
 namespace ModelledSystems.Routines;
 

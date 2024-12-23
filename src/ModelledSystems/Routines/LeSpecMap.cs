@@ -7,6 +7,7 @@ using ChaosSoft.NumericalMethods.Ode.Linearized;
 using ChaosSoft.NumericalMethods.Lyapunov;
 using ChaosSoft.NumericalMethods.QrDecomposition;
 using ScottPlot.Drawing;
+using ModelledSystems.Configuration;
 
 namespace ModelledSystems.Routines;
 

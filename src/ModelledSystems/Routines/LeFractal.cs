@@ -5,6 +5,7 @@ using ChaosSoft.Core.DataUtils;
 using ChaosSoft.NumericalMethods.Ode;
 using ChaosSoft.NumericalMethods.Lyapunov;
 using ScottPlot;
+using ModelledSystems.Configuration;
 
 namespace ModelledSystems.Routines;
 
