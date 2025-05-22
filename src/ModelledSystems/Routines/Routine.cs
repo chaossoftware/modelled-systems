@@ -88,6 +88,7 @@ abstract class Routine
             "logistic" => new LogisticLinearized(),
             "tinkerbell" => new TinkerbellLinearized(),
             "henon_heiles" => new HenonHeilesLinearized(),
+            "anischenko_nikolaev" => new AnishchenkoNikolaevLinearized(),
             "klein_baier" => new KleinBaierLinearized(),
             _ => throw new ArgumentException($"No such system: {SysConfig.Name}"),
         };

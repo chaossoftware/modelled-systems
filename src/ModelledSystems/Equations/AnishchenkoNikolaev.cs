@@ -1,5 +1,6 @@
 ﻿using ChaosSoft.Core;
 using ChaosSoft.NumericalMethods.Ode;
+using System;
 
 namespace ModelledSystems.Equations;
 
@@ -9,10 +10,10 @@ namespace ModelledSystems.Equations;
 /// </summary>
 public class AnishchenkoNikolaev : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    private double a;
-    private double b;
-    private double d;
-    private double mu;
+    protected double gamma;
+    protected double g;
+    protected double d;
+    protected double m;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnishchenkoNikolaev"/> class 
@@ -27,16 +28,16 @@ public class AnishchenkoNikolaev : IOdeSys, IHasFileName, IHasParameters, IHasNa
     /// Initializes a new instance of the <see cref="AnishchenkoNikolaev"/> class 
     /// with specific system parameters values.
     /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
+    /// <param name="gamma"></param>
+    /// <param name="g"></param>
     /// <param name="d"></param>
-    /// <param name="mu"></param>
-    public AnishchenkoNikolaev(double a, double b, double d, double mu)
+    /// <param name="m"></param>
+    public AnishchenkoNikolaev(double gamma, double g, double d, double m)
     {
-        this.a = a;
-        this.b = b;
+        this.gamma = gamma;
+        this.g = g;
         this.d = d;
-        this.mu = mu;
+        this.m = m;
     }
 
     public int EqCount { get; } = 4;
@@ -45,17 +46,17 @@ public class AnishchenkoNikolaev : IOdeSys, IHasFileName, IHasParameters, IHasNa
 
     public void SetParameters(params double[] parameters)
     {
-        a = parameters[0];
-        b = parameters[1];
+        gamma = parameters[0];
+        g = parameters[1];
         d = parameters[2];
-        mu = parameters[3];
+        m = parameters[3];
     }
 
     /// <summary>
-    /// dx/dt = −y<br/>
-    /// dy/dt = x + μy − yw − δy³<br/>
-    /// dz/dt = w<br/>
-    /// dw/dt = −βz − αw + αФ(y)<para/>
+    /// dx/dt = mx + y - xφ - dx³<br/>
+    /// dy/dt = -x<br/>
+    /// dz/dt = φ<br/>
+    /// dφ/dt = -γφ + γФ(x) - gz<para/>
     /// Ф(x) = I(x)x²<br/>
     /// I(x) = 1, x > 0; 0, x ≤ 0
     /// </summary>
@@ -66,24 +67,24 @@ public class AnishchenkoNikolaev : IOdeSys, IHasFileName, IHasParameters, IHasNa
         double x = solution[0];
         double y = solution[1];
         double z = solution[2];
-        double w = solution[3];
+        double phi = solution[3];
 
-        derivs[0] = -y;
-        derivs[1] = x + mu * y - y * w - d * y * y * y;
-        derivs[2] = w;
-        derivs[3] = -b * z - a * w + a * Fx(y);
+        derivs[0] = m * x + y - x * phi - d * x * x * x;
+        derivs[1] = -x;
+        derivs[2] = phi;
+        derivs[3] = -gamma * phi + gamma * Phi(x) - g * z;
     }
 
     public override string ToString() =>
         string.Format(
             SysFormat.GetInfoTemplate(Name, "α", "β", "δ", "μ"),
-            a, b, d, mu);
+            gamma, g, d, m);
 
     public string ToFileName() =>
         string.Format(
             SysFormat.GetFileTemplate("anishchenko-nikolaev", "a", "b", "d", "mu"),
-            a, b, d, mu);
+            gamma, g, d, m);
 
-    private static double Fx(double x) =>
+    private static double Phi(double x) =>
         x > 0 ? x * x : 0;
 }
