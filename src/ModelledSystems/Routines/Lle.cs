@@ -16,12 +16,12 @@ internal sealed class Lle : Routine
     //double[] outArray;
 
 
-    public Lle(string outDir, SystemCfg sysConfig) : base (outDir, sysConfig)
+    public Lle(string outDir, SystemCfg sysConfig, int timeMultiplier) : base (outDir, sysConfig)
     {
         _equations = GetSystemEquations(SysConfig.ParamsValues);
         _solverType = SysConfig.Solver.Type;
         _eqStep = SysConfig.Solver.Dt;
-        _totalIterations = (long)(SysConfig.Solver.ModellingTime / _eqStep);
+        _totalIterations = (long)(SysConfig.Solver.ModellingTime / _eqStep) * timeMultiplier;
         //outArray = new double[TotIter];
     }
 
