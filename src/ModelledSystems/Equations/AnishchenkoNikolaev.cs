@@ -18,7 +18,7 @@ public class AnishchenkoNikolaev : IOdeSys, IHasFileName, IHasParameters, IHasNa
     /// <summary>
     /// Initializes a new instance of the <see cref="AnishchenkoNikolaev"/> class 
     /// with default system parameters values:<br/>
-    /// α = 0.2, β = 0.43, δ = 0.001, μ = 0.0809
+    /// γ = 0.2, g = 0.43, d = 0.001, m = 0.0809
     /// </summary>
     public AnishchenkoNikolaev() : this(0.2, 0.43, 0.001, 0.0809)
     {
@@ -77,12 +77,12 @@ public class AnishchenkoNikolaev : IOdeSys, IHasFileName, IHasParameters, IHasNa
 
     public override string ToString() =>
         string.Format(
-            SysFormat.GetInfoTemplate(Name, "α", "β", "δ", "μ"),
+            SysFormat.GetInfoTemplate(Name, "γ", "g", "d", "m"),
             gamma, g, d, m);
 
     public string ToFileName() =>
         string.Format(
-            SysFormat.GetFileTemplate("anishchenko-nikolaev", "a", "b", "d", "mu"),
+            SysFormat.GetFileTemplate("anishchenko-nikolaev", "gamma", "g", "d", "m"),
             gamma, g, d, m);
 
     private static double Phi(double x) =>

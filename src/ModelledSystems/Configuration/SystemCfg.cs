@@ -11,7 +11,7 @@ public class SystemCfg
     public string Name { get; set; }
 
     [XmlElement("Solver")]
-    public SysSolverCfg Solver { get; set; }
+    public SysSolverCfg SystemSolver { get; set; }
 
     [XmlArray("Parameters")]
     [XmlArrayItem("Param", typeof(SysParamCfg))]

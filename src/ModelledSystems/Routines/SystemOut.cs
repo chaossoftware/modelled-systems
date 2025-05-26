@@ -18,12 +18,12 @@ internal sealed class SystemOut : Routine
     private readonly OdeSolverBase _solver;
     private readonly bool _binaryOutput;
 
-    public SystemOut(string outDir, SystemCfg sysParams, bool binaryOutput) : base (outDir, sysParams)
+    public SystemOut(string outDir, Config config, bool binaryOutput) : base (outDir, config.System, config.Solver)
     {
         _binaryOutput = binaryOutput;
-        _dt = sysParams.Solver.Dt;
-        _equations = GetSystemEquations(sysParams.ParamsValues);
-        _iterations = (long)(sysParams.Solver.ModellingTime / _dt) + 1;
+        _dt = config.Solver.Dt;
+        _equations = GetSystemEquations(config.System.ParamsValues);
+        _iterations = (long)(config.Solver.ModellingTime / _dt) + 1;
 
         _output = new double[_equations.EqCount][];
         

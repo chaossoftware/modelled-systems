@@ -13,16 +13,13 @@ internal sealed class Lle : Routine
     private readonly SolverType _solverType;
     private readonly long _totalIterations;
 
-    //double[] outArray;
-
-
-    public Lle(string outDir, SystemCfg sysConfig, int timeMultiplier) : base (outDir, sysConfig)
+    public Lle(string outDir, Config config) : base (outDir, config.System, config.Solver)
     {
+        _eqStep = config.Solver.Dt;
         _equations = GetSystemEquations(SysConfig.ParamsValues);
-        _solverType = SysConfig.Solver.Type;
-        _eqStep = SysConfig.Solver.Dt;
-        _totalIterations = (long)(SysConfig.Solver.ModellingTime / _eqStep) * timeMultiplier;
-        //outArray = new double[TotIter];
+        _solverType = config.Solver.Type;
+        
+        _totalIterations = (long)(config.Solver.ModellingTime / _eqStep);
     }
 
     public override void Run()
@@ -36,25 +33,7 @@ internal sealed class Lle : Routine
         LleBenettin benettin = new(solver, solverCopy, _totalIterations);
 
         benettin.Calculate();
-        //WriteResults();
         Log.Info(benettin.ToString());
         Log.Info("\nLLE = {0}", NumFormat.Format(benettin.Result, Constants.LeNumFormat));
-    }
-
-    private void WriteResults()
-    {
-        //Console.WriteLine("{0:F5}", l1);
-        //DataWriter.CreateDataFile(FileNameBase + "_inTime.le", output.ToString());
-        //StringBuilder output = new StringBuilder();
-
-        /*
-        double t = 0;
-        for (int cnt = 0; cnt < TotIter; cnt++)
-        {
-            output.AppendFormat("{0:F5}\t{0:F15}\n", t, outArray[cnt]);
-            t += EqStep;
-        }
-        DataWriter.CreateDataFile(FileNameBase + "_inTime.le", output.ToString());
-        */
     }
 }

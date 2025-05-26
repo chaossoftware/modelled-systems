@@ -12,16 +12,19 @@ namespace ModelledSystems.Routines;
 
 abstract class Routine
 {
-    protected Routine(string outDir, SystemCfg sysConfig)
+    protected Routine(string outDir, SystemCfg sysConfig, SysSolverCfg solver)
     {
         OutDir = outDir;
         SysConfig = sysConfig;
+        SolverConfig = solver;
         FileNameBase = Path.Combine(OutDir, SysConfig.Name);
     }
 
     protected string OutDir { get; }
 
     protected SystemCfg SysConfig { get; }
+
+    protected SysSolverCfg SolverConfig { get; }
 
     public ChartsCfg ChartsConfig { get; set; }
 
@@ -98,10 +101,10 @@ abstract class Routine
     }
 
     public OdeSolverBase GetSolver(IOdeSys eq) =>
-        SolverFactory.Get(SysConfig.Solver.Type, eq, SysConfig.Solver.Dt);
+        SolverFactory.Get(SolverConfig.Type, eq, SolverConfig.Dt);
 
     public LinearizedOdeSolverBase GetLinearizedSolver(ILinearizedOdeSys eq) =>
-        SolverFactory.Get(SysConfig.Solver.Type, eq, SysConfig.Solver.Dt);
+        SolverFactory.Get(SolverConfig.Type, eq, SolverConfig.Dt);
 
     public static IQrDecomposition GetOrthogonalization(string ortType, int equationsCount) =>
         ortType.ToLowerInvariant() switch

@@ -24,12 +24,13 @@ internal sealed class LleSync : Routine
     private readonly int _lastIter = 100;
     private readonly ConcurrentBag<DataPoint> _dataPoints;
 
-    public LleSync(string outDir, SystemCfg sysConfig, int pIter, double pstep) : base (outDir, sysConfig)
+    public LleSync(string outDir, Config config, int pIter, double pstep) 
+        : base (outDir, config.System, config.Solver)
     {
         _syncSeries = new DataSeries();
         _pIter = pIter;
         _pStep = pstep;
-        _totalIterations = (int)(SysConfig.Solver.ModellingTime * SysConfig.Solver.Dt);
+        _totalIterations = (int)(config.Solver.ModellingTime * config.Solver.Dt);
         _dataPoints = new ConcurrentBag<DataPoint>();
         _progress = new TaskProgress(_totalIterations);
     }

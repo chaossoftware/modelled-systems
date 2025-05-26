@@ -12,4 +12,7 @@ public class TaskCfg
 
     [XmlElement("Orthogonalization")]
     public OrthogonalizationCfg Orthogonalization { get; set; }
+
+    [XmlElement("SolverOverride")]
+    public SysSolverCfg SolverOverride { get; set; }
 }

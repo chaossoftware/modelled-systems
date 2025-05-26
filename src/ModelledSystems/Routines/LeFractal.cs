@@ -20,8 +20,8 @@ internal sealed class LeFractal : Routine
     private readonly SysParamCfg _parameter;
     private readonly double _step;
 
-    public LeFractal(string outDir, SystemCfg sysConfig, int paramIndex, int iterations, string sequence) 
-        : base(outDir, sysConfig)
+    public LeFractal(string outDir, Config config, int paramIndex, int iterations, string sequence) 
+        : base(outDir, config.System, config.Solver)
     {
         _paramIndex = paramIndex;
         _sequence = sequence;
@@ -81,11 +81,11 @@ internal sealed class LeFractal : Routine
         double[] vars = SysConfig.ParamsValues.ToArray();
 
         IOdeSys equations = GetSystemEquations(vars);
-        double eqStep = SysConfig.Solver.Dt;
-        long totIter = (long)(SysConfig.Solver.ModellingTime / eqStep);
+        double eqStep = SolverConfig.Dt;
+        long totIter = (long)(SolverConfig.ModellingTime / eqStep);
 
-        OdeSolverBase solver = SolverFactory.Get(SysConfig.Solver.Type, equations, eqStep);
-        OdeSolverBase solverCopy = SolverFactory.Get(SysConfig.Solver.Type, equations, eqStep);
+        OdeSolverBase solver = SolverFactory.Get(SolverConfig.Type, equations, eqStep);
+        OdeSolverBase solverCopy = SolverFactory.Get(SolverConfig.Type, equations, eqStep);
         solver.SetInitialConditions(0, SysConfig.InitialConditions);
         solverCopy.SetInitialConditions(0, SysConfig.InitialConditions);
 

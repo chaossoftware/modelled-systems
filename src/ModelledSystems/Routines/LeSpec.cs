@@ -20,19 +20,19 @@ internal sealed class LeSpec : Routine
     private readonly IQrDecomposition _orthogonalization;
     private readonly int _irate;
 
-    public LeSpec(string outDir, SystemCfg sysConfig, OrthogonalizationCfg orthogonalization, int timeMultiplier) : 
-        base (outDir, sysConfig)
+    public LeSpec(string outDir, Config config) : 
+        base(outDir, config.System, config.Solver)
     {
-        _irate = orthogonalization.Interval;
-        _dt = SysConfig.Solver.Dt;
+        _irate = config.Task.Orthogonalization.Interval;
+        _dt = config.Solver.Dt;
 
         _equations = GetLinearizedSystemEquations(SysConfig.ParamsValues);
         _solver = GetLinearizedSolver(_equations);
 
         _eqCount = _equations.EqCount;
 
-        _orthogonalization = GetOrthogonalization(orthogonalization.Type, _eqCount);
-        _iterations = (long)(SysConfig.Solver.ModellingTime / _dt) * timeMultiplier;
+        _orthogonalization = GetOrthogonalization(config.Task.Orthogonalization.Type, _eqCount);
+        _iterations = (long)(config.Solver.ModellingTime / _dt);
     }
 
     public override void Run()

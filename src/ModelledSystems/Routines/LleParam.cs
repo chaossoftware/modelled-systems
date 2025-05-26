@@ -26,20 +26,20 @@ internal sealed class LleParam : Routine
     private readonly long _iterations;
     private readonly double _dt;
 
-    public LleParam(string outDir, SystemCfg sysConfig, int paramIndex, int iterations) 
-        : base(outDir, sysConfig)
+    public LleParam(string outDir, Config config, int paramIndex, int iterations) 
+        : base(outDir, config.System, config.Solver)
     {
         _lleSeries = new DataSeries();
         _drivingParamIndex = paramIndex;
-        _param = sysConfig.Params[_drivingParamIndex];
+        _param = SysConfig.Params[_drivingParamIndex];
         _totalIterations = iterations;
         _paramStep = (_param.To - _param.From) / _totalIterations;
         _dataPoints = new ConcurrentBag<DataPoint>();
         _progress = new TaskProgress(_totalIterations);
-        _solverType = SysConfig.Solver.Type;
+        _solverType = config.Solver.Type;
 
-        _dt = sysConfig.Solver.Dt;
-        _iterations = (long)(sysConfig.Solver.ModellingTime / _dt);
+        _dt = config.Solver.Dt;
+        _iterations = (long)(config.Solver.ModellingTime / _dt);
     }
 
     public override void Run()

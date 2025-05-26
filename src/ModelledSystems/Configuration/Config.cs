@@ -26,4 +26,7 @@ public class Config
 
     public SystemCfg System =>
         SystemsList.First(s => s.Name == Task.System);
+
+    public SysSolverCfg Solver =>
+        Task.SolverOverride ?? System.SystemSolver;
 }

@@ -5,6 +5,8 @@
     <Action>signal</Action>
     <Orthogonalization type="mgs" interval="1"/>
     <!-- cgs , mgs , hh -->
+    <!--<SolverOverride name="rk4" time="25000" dt="0.01"/>-->
+    <!-- discrete , rk4 , rk5 -->
   </ModelingTask>
 
   <Output outDir="Output" binaryOutput="false">
@@ -14,10 +16,10 @@
   <Routines>
     <Routine name="signal"/>
     <Routine name="bifurcation" paramIndex="0" iterations="20000"/>
-    <Routine name="lle_benettin" timeMultiplier="1000"/>
+    <Routine name="lle_benettin"/>
     <Routine name="lle_sync" convergeRatio="0.0001" iterations="15000"/>
     <Routine name="lle_by_param" paramIndex="0" iterations="1500"/>
-    <Routine name="le_spec" timeMultiplier="1000"/>
+    <Routine name="le_spec" />
     <Routine name="le_spec_map" param1Index="0" param2Index="1" iterations="1100"/>
     <Routine name="lyap_fractal" paramIndex="0" sequence="AB" iterations="1000"/>
   </Routines>
@@ -165,10 +167,10 @@
       <InitialConditions>1 1 1 1</InitialConditions>
       <LinearInitialConditions>1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1</LinearInitialConditions>
       <Parameters>
-        <Param name="α" value="0.2" range="0..0.5"/>
-        <Param name="β" value="0.43" range="0..2.5"/>
-        <Param name="δ" value="0.001" range="0..2.5"/>
-        <Param name="μ" value="0.0809" range="0..2.5"/>
+        <Param name="γ" value="0.2" range="0..0.5"/>
+        <Param name="g" value="0.43" range="0..6"/>
+        <Param name="d" value="0.001" range="0..0.35"/>
+        <Param name="m" value="0.0809" range="0..3"/>
       </Parameters>
     </System>
 

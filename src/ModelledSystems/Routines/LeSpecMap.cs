@@ -27,8 +27,8 @@ internal sealed class LeSpecMap : Routine
     private readonly string _ortType;
     private readonly int _irate;
 
-    public LeSpecMap(string outDir, SystemCfg sysConfig, int xParamIndex, int yParamIndex, int paramIterations, OrthogonalizationCfg orthogonalization) 
-        : base(outDir, sysConfig)
+    public LeSpecMap(string outDir, Config config, int xParamIndex, int yParamIndex, int paramIterations) 
+        : base(outDir, config.System, config.Solver)
     {
         _xParamIndex = xParamIndex;
         _yParamIndex = yParamIndex;
@@ -49,8 +49,8 @@ internal sealed class LeSpecMap : Routine
         _arr = new double[_iterations, _iterations];
         Matrix.FillWith(_arr, -1);
 
-        _ortType = orthogonalization.Type;
-        _irate = orthogonalization.Interval;
+        _ortType = config.Task.Orthogonalization.Type;
+        _irate = config.Task.Orthogonalization.Interval;
 
         _arrPvc = new double[_iterations, _iterations];
     }
@@ -121,7 +121,7 @@ internal sealed class LeSpecMap : Routine
         solver.SetInitialConditions(0, SysConfig.InitialConditions);
         solver.SetLinearInitialConditions(SysConfig.LinearInitialConditions);
 
-        totIter = (long)(SysConfig.Solver.ModellingTime / solver.Dt);
+        totIter = (long)(SolverConfig.ModellingTime / SolverConfig.Dt);
         IQrDecomposition ort = GetOrthogonalization(_ortType, equations.EqCount);
         LeSpecBenettin lyap = new(solver, totIter, ort, _irate);
         lyap.Calculate();

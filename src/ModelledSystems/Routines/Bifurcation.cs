@@ -22,12 +22,12 @@ internal sealed class Bifurcation : Routine
     private readonly SysParamCfg _param;
     private readonly double _paramStep;
 
-    public Bifurcation(string outDir, SystemCfg sysConfig, int paramIndex, int iterations) 
-        : base(outDir, sysConfig)
+    public Bifurcation(string outDir, Config config, int paramIndex, int iterations) 
+        : base(outDir, config.System, config.Solver)
     {
         _solutions = new DataSeries();
         _drivingParamIndex = paramIndex;
-        _param = sysConfig.Params[_drivingParamIndex];
+        _param = SysConfig.Params[_drivingParamIndex];
         _totalIterations = iterations;
         _paramStep = (_param.To - _param.From) / _totalIterations;
         _dataPoints = new ConcurrentBag<DataPoint>();
