@@ -11,9 +11,9 @@ namespace ModelledSystems.Equations;
 /// </summary>
 public class QiChenAttractor : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    private double a;
-    private double b;
-    private double c;
+    protected double a;
+    protected double b;
+    protected double c;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QiChenAttractor"/> class 

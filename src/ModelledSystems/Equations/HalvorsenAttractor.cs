@@ -9,7 +9,7 @@ namespace ModelledSystems.Equations;
 /// </summary>
 public class HalvorsenAttractor : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    private double a;
+    protected double a;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HalvorsenAttractor"/> class 

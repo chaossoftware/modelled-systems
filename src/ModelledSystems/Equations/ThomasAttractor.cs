@@ -11,7 +11,7 @@ namespace ModelledSystems.Equations;
 /// </summary>
 public class ThomasAttractor : IOdeSys, IHasFileName, IHasParameters, IHasName
 { 
-    private double b;
+    protected double b;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ThomasAttractor"/> class 

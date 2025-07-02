@@ -11,11 +11,11 @@ namespace ModelledSystems.Equations;
 /// </summary>
 public class Stankevich : IOdeSys, IHasFileName, IHasParameters, IHasName
 {
-    private double a;
-    private double b;
-    private double mu;
-    private double o;
-    private double om0;
+    protected double a;
+    protected double b;
+    protected double mu;
+    protected double o;
+    protected double om0;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Stankevich"/> class 
